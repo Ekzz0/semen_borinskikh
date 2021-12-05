@@ -32,6 +32,8 @@ int main() {
     double max_r = 0; // Для правого
     double max_l = 0; // Для левого
     double Dist = 0 ;
+    int xn = 0;
+    int yn = 0;
 
     ifstream file_in("in.txt");
 
@@ -43,42 +45,36 @@ int main() {
         int x = 0;
         int y = 0;
 
-        int xn = get_x(file_in);
-        int yn =  get_y(file_in);
+        int flag = 0;
 
         while (!file_in.eof()) {
 
-
-
-
-            x = get_x(file_in);
-            y = get_y(file_in);
-            Dist = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-            // Проверка на максимальный элемент + вычисление длины от вектора до точки
-
-
-            if (xn * y - yn *x  > 0.0 ) {        // слева
-
-                if (Dist > max_l) {
-                    max_l = Dist;
-                    x_max_left = x; // x_max_right
-                    y_max_left = y; // y_max_right
-                }
+            if (flag == 0 ){
+                xn = get_x(file_in);
+                yn =  get_y(file_in);
+                flag++;
             }
-            else if (xn * y - yn * x == 0.0) {
+            else{
+                x = get_x(file_in);
+                y = get_y(file_in);
+                Dist = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
+                // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
-                if (Dist > max_r) {
-                    max_r = Dist;
-                    x_max_right = x; // x_max_left
-                    y_max_right = y; // y_max_left
+
+                if (xn * y - yn * x  <= 0.0 ) {        // справа
+                    if (Dist >= max_r) {
+                        max_r = Dist;
+                        x_max_right = x; // x_max_left
+                        y_max_right = y; // y_max_left
+                    }
+
                 }
-            }
-            else {          // справа
-                //Dist  = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-                if (Dist > max_r) {
-                    max_r = Dist;
-                    x_max_right = x; // x_max_left
-                    y_max_right = y; // y_max_left
+                else {          // справа
+                    if (Dist >= max_l) {
+                        max_l = Dist;
+                        x_max_left = x; // x_max_right
+                        y_max_left = y; // y_max_right
+                    }
                 }
             }
         }
