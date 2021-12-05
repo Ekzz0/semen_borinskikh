@@ -30,10 +30,10 @@ int main() {
     ifstream file_in("in.txt");
     //file_in.open(path);
     if (!file_in.is_open()) {
-        cout << "Error " << endl;
+        //cout << "Error " << endl;
     }
     else {
-        cout << "Successful " << endl;
+        //cout << "Successful " << endl;
         int xn = 0;
         int yn = 0;
         double max_r = 0; // Для правого
@@ -68,20 +68,20 @@ int main() {
 
                 if (*(D_RIGHT) > max_r) {
                     max_r = *(D_RIGHT);
-                    *(num_m_max_left) = x; // x_max_right
-                    *(num_m_max_left+1) = y; // y_max_right
+                    *(num_m_max_right) = x; // x_max_left
+                    *(num_m_max_right+1) = y; // y_max_left
                 }
                 if (*(D_LEFT) > max_l) {
                     max_l = *(D_LEFT);
-                    *(num_m_max_right) = x; // x_max_left
-                    *(num_m_max_right+1) = y; // y_max_left
+                    *(num_m_max_left) = x; // x_max_right
+                    *(num_m_max_left+1) = y; // y_max_right
                 }
                 delete[] D_LEFT;
                 delete[] D_RIGHT;
             }
         }
-        cout << "Leftmost: " << *(num_m_max_right) << " " << *(num_m_max_right + 1) << endl;
-        cout << "Rightmost: " << *(num_m_max_left) << " " << *(num_m_max_left + 1) << endl;
+        cout << "Leftmost: " << *(num_m_max_left) << ' ' << *(num_m_max_left + 1) << endl;
+        cout << "Rightmost: " << *(num_m_max_right) << ' ' << *(num_m_max_right + 1) << endl;
         delete[] num_m_max_left;
         delete[] num_m_max_right;
         }
