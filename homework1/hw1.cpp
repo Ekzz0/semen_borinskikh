@@ -41,8 +41,8 @@ int main() {
     if (file_in.is_open()){
 
 
-        while (getline(file_in, num)) {
-
+        while (!file_in.eof()) {
+            getline(file_in, num);
             if (flag == 0 ){
                 xn = get_x(num);
                 yn =  get_y(num);
