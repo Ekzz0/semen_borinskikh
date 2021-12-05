@@ -47,12 +47,13 @@ int main() {
         int yn =  get_y(file_in);
 
         while (!file_in.eof()) {
-            if(xn !=0 && yn !=0){
-                Dist = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-            }
+
+
+
 
             x = get_x(file_in);
             y = get_y(file_in);
+            Dist = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
             // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
 
@@ -73,7 +74,7 @@ int main() {
                 }
             }
             else {          // справа
-                Dist  = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
+                //Dist  = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
                 if (Dist > max_r) {
                     max_r = Dist;
                     x_max_right = x; // x_max_left
