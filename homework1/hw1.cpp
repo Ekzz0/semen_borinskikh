@@ -73,7 +73,7 @@ int main() {
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
                 if (xn * y - yn * x  > 0.0 ) { // слева
-                    if (max_l <= Dist) {
+                    if ( Dist >= max_l) {
                         max_l = Dist;
                         x_max_left = x; // x_max_right
                         y_max_left = y; // y_max_right
@@ -82,7 +82,7 @@ int main() {
 
                 }
                 else {          // справа
-                    if (max_r <= Dist) {
+                    if ( Dist >= max_r) {
                         max_r = Dist;
                         x_max_right = x; // x_max_left
                         y_max_right = y; // y_max_left
