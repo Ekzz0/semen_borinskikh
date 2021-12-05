@@ -34,19 +34,14 @@ int main() {
     double Dist = 0 ;
     int xn = 0;
     int yn = 0;
+    int x = 0;
+    int y = 0;
+    int flag = 0;
+    string line;
 
     ifstream file_in("in.txt");
 
-    if (!file_in.is_open()) {
-        //cout << "Error " << endl;
-    }
-    else {
-        //cout << "Successful " << endl;
-        int x = 0;
-        int y = 0;
-
-        int flag = 0;
-
+    if (file_in.is_open()) {
         while (!file_in.eof()) {
 
             if (flag == 0 ){
