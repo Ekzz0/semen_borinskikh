@@ -6,8 +6,13 @@
 using namespace std;
 
 float get_x(string num) {
-    int determinator = num.find(" ");
-    string X = num.substr(0, determinator);
+    int probel = num.find(" "); // возвращается номер пробела
+    //string X = num.substr(0, probel);
+    string X;
+
+    for (int i = 0; i<probel; ++i){
+        X.append(1, num[i]);
+    }
     float x = stoi(X);
     return x;
 }
@@ -22,27 +27,25 @@ float get_y(string num)
 }
 
 int main() {
-    double x_max_left = 0;
-    double y_max_left = 0;
-    double x_max_right = 0;
-    double y_max_right = 0;
+    double x_max_left;
+    double y_max_left;
+    double x_max_right;
+    double y_max_right;
     double max_r = 0; // Для правого
     double max_l = 0; // Для левого
-    double Dist = 0 ;
-    int xn = 0;
-    int yn = 0;
-    int x = 0;
-    int y = 0;
+    double Dist;
+    int xn;
+    int yn;
+    int x;
+    int y;
     int flag = 0;
     string num;
 
     ifstream file_in("in.txt");
 
     if (file_in.is_open()){
+        while (getline(file_in, num)) {
 
-
-        while (!file_in.eof()) {
-            getline(file_in, num);
             if (flag == 0 ){
                 xn = get_x(num);
                 yn =  get_y(num);
@@ -74,6 +77,9 @@ int main() {
 
 
         }
+    }
+    else{
+        //cout << "Error: " << endl;
     }
     file_in.close();
     cout << "Leftmost: " << x_max_left << " " << y_max_left << endl;
