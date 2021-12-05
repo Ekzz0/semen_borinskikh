@@ -58,16 +58,16 @@ int main() {
     ifstream file_in("in.txt");
 
 
-        while (getline(file_in, str)) {
+        while (!file_in.eof()) {
 
             if (flag == 0 ){
-                xn = coordx(str);
-                yn =  coordy(str);
+                xn = get_x(file_in);
+                yn =  get_y(file_in);
                 flag++;
             }
             else{
-                x = coordx(str);
-                y = coordy(str);
+                x = get_x(file_in);
+                y = get_y(file_in);
 
                 Dist = abs((xn * y - yn * x) / sqrt(xn*xn + yn *yn));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
