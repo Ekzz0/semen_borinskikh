@@ -9,7 +9,6 @@ float get_x(string num) {
     int probel = num.find(" "); // возвращается номер пробела
     //string X = num.substr(0, probel);
     string X;
-
     for (int i = 0; i<probel; ++i){
         X.append(1, num[i]);
     }
@@ -19,8 +18,12 @@ float get_x(string num) {
 
 float get_y(string num)
 {
-    int determinator = num.find(" ");
-    string Y = num.substr(determinator + 1, num.length());
+    int probel = num.find(" ");
+    //string Y = num.substr(probel + 1, num.length());
+    string Y;
+    for (int i = probel; i<num.length(); ++i){
+        Y.append(1, num[i]);
+    }
     float y = stoi(Y);
     return y;
 
