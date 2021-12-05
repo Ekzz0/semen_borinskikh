@@ -5,36 +5,17 @@
 
 using namespace std;
 
-
-float get_x(ifstream &file_in) // функция получения координаты x
-{
-    string x_cord;
-    float x;
-    file_in >> x_cord;
-    x = stof(x_cord);
-    return x;
-}
-
-float get_y(ifstream &file_in)  // функция получения координаты y
-{
-    string y_cord;
-    float y;
-    file_in >> ws >> y_cord;
-    y = stof(y_cord);
-    return y;
-}
-
-float coordx(string str) {
-    int determinator = str.find(" ");
-    string X = str.substr(0, determinator);
+float get_x(string num) {
+    int determinator = num.find(" ");
+    string X = num.substr(0, determinator);
     float x = stoi(X);
     return x;
 }
 
-float coordy(string str)
+float get_y(string num)
 {
-    int determinator = str.find(" ");
-    string Y = str.substr(determinator + 1, str.length());
+    int determinator = num.find(" ");
+    string Y = num.substr(determinator + 1, num.length());
     float y = stoi(Y);
     return y;
 
@@ -53,45 +34,47 @@ int main() {
     int x = 0;
     int y = 0;
     int flag = 0;
-    string str;
+    string num;
 
     ifstream file_in("in.txt");
 
+    if (file_in.is_open()){
 
-        while (!file_in.eof()) {
+
+        while (getline(file_in, num)) {
 
             if (flag == 0 ){
-                xn = get_x(file_in);
-                yn =  get_y(file_in);
+                xn = get_x(num);
+                yn =  get_y(num);
                 flag++;
             }
             else{
-                x = get_x(file_in);
-                y = get_y(file_in);
+                x = get_x(num);
+                y = get_y(num);
 
                 Dist = abs((xn * y - yn * x) / sqrt(xn*xn + yn *yn));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
-                if (xn * y - yn * x  > 0.0 ) { // слева
-                    if ( Dist >= max_l) {
-                        max_l = Dist;
-                        x_max_left = x; // x_max_right
-                        y_max_left = y; // y_max_right
-                    }
-
-
-                }
-                else {          // справа
+                if (xn * y - yn * x  <= 0.0 ) { // справа
                     if ( Dist >= max_r) {
                         max_r = Dist;
                         x_max_right = x; // x_max_left
                         y_max_right = y; // y_max_left
+                    }
+
+                }
+                else {          // слева
+                    if ( Dist >= max_l) {
+                        max_l = Dist;
+                        x_max_left = x; // x_max_right
+                        y_max_left = y; // y_max_right
                     }
                 }
             }
 
 
         }
+    }
     file_in.close();
     cout << "Leftmost: " << x_max_left << " " << y_max_left << endl;
     cout << "Rightmost: " <<  x_max_right << " " << y_max_right << endl;
