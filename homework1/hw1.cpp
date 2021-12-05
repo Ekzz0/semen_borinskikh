@@ -69,7 +69,7 @@ int main() {
                 x = coordx(str);
                 y = coordy(str);
 
-                Dist = abs(xn * y - yn * x / sqrt(xn ^ 2 + yn ^ 2));
+                Dist = abs((xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
                 if (xn * y - yn * x  > 0.0 ) { // слева
