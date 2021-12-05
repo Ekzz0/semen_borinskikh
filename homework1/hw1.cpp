@@ -24,6 +24,22 @@ float get_y(ifstream &file_in)  // функция получения коорд�
     return y;
 }
 
+float coordx(string str) {
+    int determinator = str.find(" ");
+    string X = str.substr(0, determinator);
+    float x = stoi(X);
+    return x;
+}
+
+float coordy(string str)
+{
+    int determinator = str.find(" ");
+    string Y = str.substr(determinator + 1, str.length());
+    float y = stoi(Y);
+    return y;
+
+}
+
 int main() {
     double x_max_left = 0;
     double y_max_left = 0;
@@ -37,38 +53,39 @@ int main() {
     int x = 0;
     int y = 0;
     int flag = 0;
-    string line;
+    string str;
 
     ifstream file_in("in.txt");
 
 
-        while (!file_in.eof()) {
+        while (getline(file_in, str)) {
 
             if (flag == 0 ){
-                xn = get_x(file_in);
-                yn =  get_y(file_in);
+                xn = coordx(str);
+                yn =  coordy(str);
                 flag++;
             }
             else{
-                x = get_x(file_in);
-                y = get_y(file_in);
+                x = coordx(str);
+                y = coordy(str);
+
                 Dist = abs(xn * y - yn * x / sqrt(xn ^ 2 + yn ^ 2));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
-
-                if (xn * y - yn * x  <= 0.0 ) {        // справа
-                    if (Dist >= max_r) {
-                        max_r = Dist;
-                        x_max_right = x; // x_max_left
-                        y_max_right = y; // y_max_left
-                    }
-
-                }
-                else {          // справа
+                if (xn * y - yn * x  > 0.0 ) { // слева
                     if (Dist >= max_l) {
                         max_l = Dist;
                         x_max_left = x; // x_max_right
                         y_max_left = y; // y_max_right
+                    }
+
+
+                }
+                else {          // справа
+                    if (Dist >= max_r) {
+                        max_r = Dist;
+                        x_max_right = x; // x_max_left
+                        y_max_right = y; // y_max_left
                     }
                 }
             }
@@ -76,8 +93,8 @@ int main() {
 
         }
     file_in.close();
-    cout << "Leftmost: " << x_max_left << ' ' << y_max_left << endl;
-    cout << "Rightmost: " <<  x_max_right << ' ' << y_max_right << endl;
+    cout << "Leftmost: " << x_max_left << " " << y_max_left << endl;
+    cout << "Rightmost: " <<  x_max_right << " " << y_max_right << endl;
     return 0;
     }
 
