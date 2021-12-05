@@ -80,8 +80,8 @@ int main() {
                 delete[] D_RIGHT;
             }
         }
-        cout << "Leftmost: " << *(num_m_max_left) << " " << *(num_m_max_left + 1) << endl;
-        cout << "Rightmost: " << *(num_m_max_right) << " " << *(num_m_max_right + 1) << endl;
+        cout << "Leftmost: " << *(num_m_max_right) << " " << *(num_m_max_right + 1) << endl;
+        cout << "Rightmost: " << *(num_m_max_left) << " " << *(num_m_max_left + 1) << endl;
         delete[] num_m_max_left;
         delete[] num_m_max_right;
         }
