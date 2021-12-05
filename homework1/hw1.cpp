@@ -41,7 +41,7 @@ int main() {
 
     ifstream file_in("in.txt");
 
-    if (file_in.is_open()) {
+
         while (!file_in.eof()) {
 
             if (flag == 0 ){
@@ -52,7 +52,7 @@ int main() {
             else{
                 x = get_x(file_in);
                 y = get_y(file_in);
-                Dist = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
+                Dist = abs(xn * y - yn * x / sqrt(xn ^ 2 + yn ^ 2));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
 
@@ -72,7 +72,7 @@ int main() {
                     }
                 }
             }
-        }
+
 
         }
     file_in.close();
