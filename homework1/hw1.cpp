@@ -69,11 +69,11 @@ int main() {
                 x = coordx(str);
                 y = coordy(str);
 
-                Dist = abs((xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2));
+                Dist = abs((xn * y - yn * x) / sqrt(xn*xn + yn *yn));
                 // Проверка на максимальный элемент + вычисление длины от вектора до точки
 
                 if (xn * y - yn * x  > 0.0 ) { // слева
-                    if (Dist >= max_l) {
+                    if (max_l <= Dist) {
                         max_l = Dist;
                         x_max_left = x; // x_max_right
                         y_max_left = y; // y_max_right
@@ -82,7 +82,7 @@ int main() {
 
                 }
                 else {          // справа
-                    if (Dist >= max_r) {
+                    if (max_r <= Dist) {
                         max_r = Dist;
                         x_max_right = x; // x_max_left
                         y_max_right = y; // y_max_left
