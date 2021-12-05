@@ -1,100 +1,113 @@
 #include <iostream>
 #include <fstream>
-#include <cmath>
+#include <iomanip>
+#include <valarray>
 
 using namespace std;
+string * StringToMass(string base_str, char delim, int size){
 
-bool compare(float main_x, float main_y, float x, float y)
-{
-    bool result = false;
-    if (main_x != 0)
-    {
-        if (main_y/main_x*x > y)
+    size_t pos = 0;
+    size_t base_str_size = base_str.size();
+    //size_t delim_size = delim.size();
+    size_t delim_size=1;
+    string temp;
+    int i=0;
+    string *mass_str = new string[size];
+    while (pos < base_str_size) {
+        temp = temp.assign(base_str, pos, base_str.find(delim, pos) - pos);
+        if (temp.size() > 0)  // проверка на пустую строку при необходимости
         {
-            result = true;
-        }
-    } else
-    {
-        if ((x < 0 && main_y > 0) || (x > 0 && main_y < 0))
-        {
-            result = true;
-        }
-    }
-    return result;
-}
-
-double dot_prod(float main_x,float main_y,float x, float y) // функция скалярного произведения
-{
-    return (main_x*main_x + main_y*y)/(sqrt(pow(x,2)+pow(y, 2))*sqrt(pow(main_x,2)+pow(main_y,2)));
-}
-
-
-float get_coords_x(ifstream &input_file) // функция получения координаты x
-{
-    string coord1;
-    float x;
-    input_file >> coord1;
-    x = stof(coord1);
-    return x;
-}
-
-float get_coords_y(ifstream &input_file)  // функция получения координаты y
-{
-    string coord2;
-    float y;
-    input_file >> ws >> coord2;
-    y = stof(coord2);
-    return y;
-}
-
-
-int main()
-{
-    float main_x;
-    float main_y;
-    double temp_dot_prod;
-    double leftmost_x = 0;
-    double leftmost_y = 0;
-    double leftmost_cos = 2;
-    double rightmost_x = 0;
-    double rightmost_y = 0;
-    double rightmost_cos = 2;
-    float x;
-    float y;
-
-    string line;
-
-    ifstream input_file("in.txt");
-    if (getline(input_file, line)) {
-        main_x = get_coords_x(input_file);
-        main_y = get_coords_y(input_file);
-    }
-
-
-    while (getline(input_file, line))
-    {
-        x = get_coords_x(input_file);
-        y = get_coords_y(input_file);
-        temp_dot_prod = dot_prod(main_x, main_y, x, y);
-        if (compare(main_x, main_y, x, y))
-        {
-            if ( temp_dot_prod < leftmost_cos)
-            {
-                leftmost_x = x;
-                leftmost_y = y;
-                leftmost_cos = temp_dot_prod;
+           // cout << temp << endl;
+            mass_str[i] = temp;
+            i++;
+            if(i==size){
+                break;
             }
-        } else if (temp_dot_prod < rightmost_cos)
+            //cout << i << endl;
+        }
+        pos += temp.size() + delim_size;
+
+    }
+
+    return mass_str;
+}
+std::tuple<int, int> step(int dividend, int divisor) {
+    return  std::make_tuple(dividend / divisor, dividend % divisor);
+}
+int main() {
+    std::string line;
+    double xn,yn,fx_r,fy_r,fx_l,fy_l;
+    double finde_value=1;
+    double max_d_r=0;
+    double max_d_l=0;
+    bool isFirstLine= true;
+    bool isTwiceLine_r= true,isTwiceLine_l= true;
+    std::ifstream in("in.txt"); // окрываем файл для чтения
+    if (in.is_open())
+    {
+        double x=0; double y=0;
+        in >> x >> y;
+        xn=(-1)*x;
+        yn=(-1)*y;
+        //std::<<  <<::endl;
+        while (in >> x >> y)
         {
-            rightmost_x = x;
-            rightmost_y = y;
-            rightmost_cos = temp_dot_prod;
+                //растояние
+                double dist;
+                if(xn !=0 && yn !=0){
+                    dist=(abs(-1*(x)/xn+y/yn)/sqrt((1/xn)*(1/xn)+(1/yn)*(1/yn)));
+					dist = std::round(dist * 10000000000.0) / 10000000000.0;
+                   // dist=(abs((yn-0)*x-(xn-0)*y+xn*0-yn*0))/(sqrt(pow(xn-0,2)+pow(yn-0,2))); //вектор как прямая заданная 2мя точками
+                }
+                else{
+                    (xn ==0)? dist =x:dist= y;
+                    /*if(xn ==0){
+                        dist= x;
+                        //dist=sqrt(pow(x-xn,2)+pow(y-yn,2)); //как растояние между 2мя точками
+                    }
+                    else{
+                        dist=y;
+                    }*/
+                }
+                //<0 - справа:
+                if(((xn-0)*(y-0)-(yn-0)*(x-0))>=0){
+                    if(dist>=max_d_r){
+                        max_d_r=dist;
+                        fx_r=x;
+                        fy_r=y;
+                    }
+                    /*if(isTwiceLine_r){
+                        isTwiceLine_r= false;
+                        max_d_r=dist;
+                        fx_r=x;
+                        fy_r=y;
+                    }
+                    else{
+                    }*/
+                }//>0 - слева
+                else{
+                    if(dist>=max_d_l){
+                        max_d_l=dist;
+                        fx_l=x;
+                        fy_l=y;
+                    }
+
+                    /*if(isTwiceLine_l){
+                        isTwiceLine_l= false;
+                        max_d_l=dist;
+                        fx_l=x;
+                        fy_l=y;
+                    }
+                    else{
+                    }*/
+                }
+
+            //delete[] values;
         }
     }
-    input_file.close();
-
-    cout << "Leftmost: " << leftmost_x << ' ' << leftmost_y << endl;
-    cout << "Rightmost: " << rightmost_x << ' ' << rightmost_y << endl;
+    in.close();     // закрываем файл
+    std::cout << "Leftmost: " << fx_l << " " << fy_l << "\n";
+    std::cout << "Rightmost: " << fx_r << " " << fy_r << "\n";
 
     return 0;
 }
