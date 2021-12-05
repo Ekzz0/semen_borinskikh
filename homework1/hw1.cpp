@@ -1,93 +1,100 @@
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <cmath>
 
 using namespace std;
 
-
-float get_x(ifstream &input_file) // функция получения координаты x
+bool compare(float main_x, float main_y, float x, float y)
 {
-    string x_cord;
+    bool result = false;
+    if (main_x != 0)
+    {
+        if (main_y/main_x*x > y)
+        {
+            result = true;
+        }
+    } else
+    {
+        if ((x < 0 && main_y > 0) || (x > 0 && main_y < 0))
+        {
+            result = true;
+        }
+    }
+    return result;
+}
+
+double dot_prod(float main_x,float main_y,float x, float y) // функция скалярного произведения
+{
+    return (main_x*main_x + main_y*y)/(sqrt(pow(x,2)+pow(y, 2))*sqrt(pow(main_x,2)+pow(main_y,2)));
+}
+
+
+float get_coords_x(ifstream &input_file) // функция получения координаты x
+{
+    string coord1;
     float x;
-    input_file >> x_cord;
-    x = stof(x_cord);
+    input_file >> coord1;
+    x = stof(coord1);
     return x;
 }
 
-float get_y(ifstream &input_file)  // функция получения координаты y
+float get_coords_y(ifstream &input_file)  // функция получения координаты y
 {
-    string y_cord;
+    string coord2;
     float y;
-    input_file >> ws >> y_cord;
-    y = stof(y_cord);
+    input_file >> ws >> coord2;
+    y = stof(coord2);
     return y;
 }
 
-int main() {
 
-    //string path = "in.txt";
-    ifstream file_in("in.txt");
-    //file_in.open(path);
-    if (!file_in.is_open()) {
-        //cout << "Error " << endl;
+int main()
+{
+    float main_x;
+    float main_y;
+    double temp_dot_prod;
+    double leftmost_x = 0;
+    double leftmost_y = 0;
+    double leftmost_cos = 2;
+    double rightmost_x = 0;
+    double rightmost_y = 0;
+    double rightmost_cos = 2;
+    float x;
+    float y;
+
+    string line;
+
+    ifstream input_file("in.txt");
+    if (getline(input_file, line)) {
+        main_x = get_coords_x(input_file);
+        main_y = get_coords_y(input_file);
     }
-    else {
-        //cout << "Successful " << endl;
-        int xn = 0;
-        int yn = 0;
-        double max_r = 0; // Для правого
-        double max_l = 0; // Для левого
-        int first = 0; // счетчик, чтобы получить 1е значение вектора
-        int x = 0;
-        int y = 0;
-        int *num_m_max_left = new int[2];
-        int *num_m_max_right = new int[2];
 
-        while (!file_in.eof()) {
-            if (first == 0) {
-                xn = get_x(file_in);
-                yn = get_y(file_in);
-                first++;
-            }
-            else{
-                x = get_x(file_in);
-                y = get_y(file_in);
-                // Проверка на максимальный элемент + вычисление длины от вектора до точки
-                double* D_LEFT = new double[2];
-                double* D_RIGHT = new double[2];
-                if (xn * y - yn *x  > 0.0 ) {        // слева
-                    *(D_LEFT) = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-                }
-                else if (xn * y - yn * x == 0.0) {
-                    *(D_RIGHT) = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-                }
-                else {          // справа
-                    *(D_RIGHT)  = abs(xn * y - yn * x) / sqrt(xn ^ 2 + yn ^ 2);
-                }
 
-                if (*(D_RIGHT) > max_r) {
-                    max_r = *(D_RIGHT);
-                    *(num_m_max_right) = x; // x_max_left
-                    *(num_m_max_right+1) = y; // y_max_left
-                }
-                if (*(D_LEFT) > max_l) {
-                    max_l = *(D_LEFT);
-                    *(num_m_max_left) = x; // x_max_right
-                    *(num_m_max_left+1) = y; // y_max_right
-                }
-                delete[] D_LEFT;
-                delete[] D_RIGHT;
+    while (getline(input_file, line))
+    {
+        x = get_coords_x(input_file);
+        y = get_coords_y(input_file);
+        temp_dot_prod = dot_prod(main_x, main_y, x, y);
+        if (compare(main_x, main_y, x, y))
+        {
+            if ( temp_dot_prod < leftmost_cos)
+            {
+                leftmost_x = x;
+                leftmost_y = y;
+                leftmost_cos = temp_dot_prod;
             }
+        } else if (temp_dot_prod < rightmost_cos)
+        {
+            rightmost_x = x;
+            rightmost_y = y;
+            rightmost_cos = temp_dot_prod;
         }
-        cout << "Leftmost: " << *(num_m_max_left) << ' ' << *(num_m_max_left + 1) << endl;
-        cout << "Rightmost: " << *(num_m_max_right) << ' ' << *(num_m_max_right + 1) << endl;
-        delete[] num_m_max_left;
-        delete[] num_m_max_right;
-        }
-    file_in.close();
+    }
+    input_file.close();
+
+    cout << "Leftmost: " << leftmost_x << ' ' << leftmost_y << endl;
+    cout << "Rightmost: " << rightmost_x << ' ' << rightmost_y << endl;
+
     return 0;
-    }
-
-
-
+}
