@@ -65,12 +65,15 @@ int main(int argc, char** argv)
 //int main()
 {
 
-    if (argc < 2 || argc > 2) {
-        cout << "аргументов нет или их больше чем мы ожидаем" << endl;
-    }
+    string input_filename;
 
-    ifstream file_in;
-    file_in.open(argv[1]);
+    if (argc == 2)
+    {
+        input_filename = argv[1];
+    } else {
+        input_filename = "input.txt";
+    }
+    ifstream file_in(input_filename);
 
 
     // все необходимые переменные:
