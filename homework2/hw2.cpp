@@ -27,10 +27,11 @@ double get_y(string num)
     return y;
 }
 
-void phys(double x0,double h0, double vx, double vy, vector<double> &X, vector<double> &H, int &result, int dir,  double y,double t)
+void phys(double x0,double h0, double vx, double vy, vector<double> &X, vector<double> &H, int &result, int dir)
 {
-
-    for (int i = result;  i < X.size(); i = i + dir)
+    double y;
+    double t;
+    for (int i = result; i < X.size(); i = i + dir)
     {
         if (i == -1)
         {
@@ -52,7 +53,7 @@ void phys(double x0,double h0, double vx, double vy, vector<double> &X, vector<d
             double vyt = vy - 9.81 * t * dir;
 
             dir = dir * -1;
-            phys(X[i], y, vx, vyt, X, H, result, dir, y, t);
+            phys(X[i], y, vx, vyt, X, H, result, dir);
             return;
         }
     }
@@ -120,13 +121,12 @@ int main(int argc, char** argv)
             else // столкновение
             {
                 double vy_t = vy - 9.81 * t ;
-
-                phys(X.back(), y, vx, vy_t, X, Y, sector, -1, y, t);
+                phys(X.back(), y, vx, vy_t, X, Y, sector, -1);
 
             }
         }
     }
-    cout << "sector: " << sector;
+    cout << sector;
 
     return 0;
 }
