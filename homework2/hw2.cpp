@@ -18,6 +18,7 @@ double get_x(string num) {
 
 double get_y(string num)
 {
+
     int probel = num.find(" "); // возвращается номер пробела
     string Y;
     for (int i = probel; i<num.length(); ++i){
@@ -38,13 +39,13 @@ void phys(double x0,double h0, double vx, double vy, vector<double> &X, vector<d
             break;
         }
         t = (X[i+dir] - x0)/(vx);
-
         y =  h0 + vy * t * dir - 9.81 * t * t / 2;
 
         if (H[i + dir] < y) // если пролетает выше
         {
             result += dir;
-        } else if((y < 0) || (result == 0)) // если не долетел до следующей
+        }
+        else if((y < 0) || (result == 0)) // если не долетел до следующей
         {
             return;
         }
@@ -60,9 +61,14 @@ void phys(double x0,double h0, double vx, double vy, vector<double> &X, vector<d
 }
 
 
+struct XY
+{
+    double X;
+    double Y;
+};
 
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 //int main()
 {
 
@@ -71,11 +77,13 @@ int main(int argc, char** argv)
     if (argc == 2)
     {
         input_filename = argv[1];
-    } else {
-        input_filename = "input.txt";
     }
-    ifstream file_in(input_filename);
+    else
+    {
+        cout << "Аргументов нет или их больше чем нужно" << endl;
+    }
 
+    ifstream file_in(input_filename);
 
     // все необходимые переменные:
     int sector=0;
@@ -86,6 +94,7 @@ int main(int argc, char** argv)
     double y; // высота полета шарика при данном t
     vector<double> X;
     vector<double> Y;
+    vector <XY> XY;
     string num;
 
     if (file_in.is_open())
@@ -106,6 +115,8 @@ int main(int argc, char** argv)
         {
             X.push_back(get_x(num));
             Y.push_back(get_y(num));
+            XY.push_back({get_x(num),get_y(num)});
+
 
             t =  (X.back() - 0)/(vx);
             y =  h0 + vy * t - 9.81 * t * t / 2;
@@ -116,7 +127,7 @@ int main(int argc, char** argv)
             }
             else if((y < 0) || (sector == 0)) // если не долетел до следующей
             {
-
+                break;
             }
             else // столкновение
             {
