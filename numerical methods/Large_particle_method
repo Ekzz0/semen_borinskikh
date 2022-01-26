@@ -1,0 +1,996 @@
+#include "pch.h"
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#define N   51
+#define N_D 52
+#define M   51
+#define M_D 52
+
+using namespace std;
+
+double** dmatrix(int w1, int n, int w2, int m)
+{
+	double **matr = new double*[n + 1];
+	for (int i = 0; i < n + 1; i++)
+	{
+		matr[i] = new double[m + 1];
+	}
+	for (int i = 0; i < n + 1; i++)
+	{
+		for (int j = 0; j < m + 1; j++)
+		{
+			matr[i][j] = 0;
+		}
+	}
+	return matr;
+}
+void free_dmatrix(double** matr, int w1, int n, int w2, int m)
+{
+	for (int i = 0; i < n + 1; i++)
+	{
+		delete[] matr[i];
+	}
+	delete[] matr;
+}
+
+
+int main()
+{
+	double **U1, **U2, **V1, **V2, **P, **Ro1, **Ro2, **E1, **E2, **J2, **J22, **a, DY, DT, **tx, **ty, **n, **Re,
+		**UE1, **UE2, **VE1, **VE2, **K1, **CP1, **RUmu1, **RVmu1, **mu11,
+		**RU1, **RUK1, **RUCP1, **RUU1, **RUV1, **RUa1, **RUE1, **RU2, **RUK2, **RUCP2, **RUU2, **RUV2, **RUa2, **RUE2,
+		**RV1, **RVK1, **RVCP1, **RVU1, **RVV1, **RVa1, **RVE1, **RV2, **RVK2, **RVCP2, **RVU2, **RVV2, **RVa2, **RVE2,
+		alfa, beta, **EE1, **EE2, **UU1, **VV1, **UU2, **VV2, **RUJ2, **RVJ2, **Ro11, **Ro21, **a11, **K11, **CP11,
+		**U11, **V11, **U21, **V21, **J21, **E21, **E11,**UV1, **UV2, pi, d, mu,
+		A1, A2, A3, A4, A5, A6, A7, A8, A52, A62, A72, A82, Aa1, Aa2, Aa3, Aa4,
+		A13, A23, A33, A43, DX;
+
+	int    I, J, NC;
+	ofstream FP, FE1, FE2, FU1, FU2, FV1, FV2, FJ2, FRo1, FRo2, Fa, FK1, FCP1, FUV1, FUV2;
+
+	//для эйлерова этапа
+	Ro1 = dmatrix(0, N_D, 0, M_D);
+	Ro2 = dmatrix(0, N_D, 0, M_D);
+	U1 = dmatrix(0, N_D, 0, M_D);
+	U2 = dmatrix(0, N_D, 0, M_D);
+	V1 = dmatrix(0, N_D, 0, M_D);
+	V2 = dmatrix(0, N_D, 0, M_D);
+	a = dmatrix(0, N_D, 0, M_D);
+	P = dmatrix(0, N_D, 0, M_D);
+	E1 = dmatrix(0, N_D, 0, M_D);
+	E2 = dmatrix(0, N_D, 0, M_D);
+	UE1 = dmatrix(0, N_D, 0, M_D);
+	VE1 = dmatrix(0, N_D, 0, M_D);
+	UE2 = dmatrix(0, N_D, 0, M_D);
+	VE2 = dmatrix(0, N_D, 0, M_D);
+	EE1 = dmatrix(0, N_D, 0, M_D);
+	EE2 = dmatrix(0, N_D, 0, M_D);
+	UU1 = dmatrix(0, N_D, 0, M_D);
+	VV1 = dmatrix(0, N_D, 0, M_D);
+	UU2 = dmatrix(0, N_D, 0, M_D);
+	VV2 = dmatrix(0, N_D, 0, M_D);
+	J2 = dmatrix(0, N_D, 0, M_D);
+	J22 = dmatrix(0, N_D, 0, M_D);
+	K1 = dmatrix(0, N_D, 0, M_D);
+	//для ланранжева этапа
+	RU1 = dmatrix(0, N_D, 0, M_D);
+	RUK1 = dmatrix(0, N_D, 0, M_D);
+	RUCP1 = dmatrix(0, N_D, 0, M_D);
+	RUU1 = dmatrix(0, N_D, 0, M_D);
+	RUV1 = dmatrix(0, N_D, 0, M_D);
+	RUE1 = dmatrix(0, N_D, 0, M_D);
+	RUa1 = dmatrix(0, N_D, 0, M_D);
+
+	RU2 = dmatrix(0, N_D, 0, M_D);
+	RUK2 = dmatrix(0, N_D, 0, M_D);
+	RUCP2 = dmatrix(0, N_D, 0, M_D);
+	RUU2 = dmatrix(0, N_D, 0, M_D);
+	RUV2 = dmatrix(0, N_D, 0, M_D);
+	RUE2 = dmatrix(0, N_D, 0, M_D);
+	RUa2 = dmatrix(0, N_D, 0, M_D);
+
+	RV1 = dmatrix(0, N_D, 0, M_D);
+	RVK1 = dmatrix(0, N_D, 0, M_D);
+	RVCP1 = dmatrix(0, N_D, 0, M_D);
+	RVU1 = dmatrix(0, N_D, 0, M_D);
+	RVV1 = dmatrix(0, N_D, 0, M_D);
+	RVE1 = dmatrix(0, N_D, 0, M_D);
+	RVa1 = dmatrix(0, N_D, 0, M_D);
+
+	RV2 = dmatrix(0, N_D, 0, M_D);
+	RVK2 = dmatrix(0, N_D, 0, M_D);
+	RVCP2 = dmatrix(0, N_D, 0, M_D);
+	RVU2 = dmatrix(0, N_D, 0, M_D);
+	RVV2 = dmatrix(0, N_D, 0, M_D);
+	RVE2 = dmatrix(0, N_D, 0, M_D);
+	RVa2 = dmatrix(0, N_D, 0, M_D);
+	RUJ2 = dmatrix(0, N_D, 0, M_D);
+	RVJ2 = dmatrix(0, N_D, 0, M_D);
+	RVmu1 = dmatrix(0, N_D, 0, M_D);
+	RUmu1 = dmatrix(0, N_D, 0, M_D);
+	mu11 = dmatrix(0, N_D, 0, M_D);
+	tx = dmatrix(0, N_D, 0, M_D);
+	ty = dmatrix(0, N_D, 0, M_D);
+	Re = dmatrix(0, N_D, 0, M_D);
+	n = dmatrix(0, N_D, 0, M_D);
+
+	//для заключительного этапа
+	a11 = dmatrix(0, N_D, 0, M_D);
+	Ro11 = dmatrix(0, N_D, 0, M_D);
+	Ro21 = dmatrix(0, N_D, 0, M_D);
+	K11 = dmatrix(0, N_D, 0, M_D);
+	CP11 = dmatrix(0, N_D, 0, M_D);
+
+	U11 = dmatrix(0, N_D, 0, M_D);
+	V11 = dmatrix(0, N_D, 0, M_D);
+	V21 = dmatrix(0, N_D, 0, M_D);
+	U21 = dmatrix(0, N_D, 0, M_D);
+	J21 = dmatrix(0, N_D, 0, M_D);
+	E21 = dmatrix(0, N_D, 0, M_D);
+	E11 = dmatrix(0, N_D, 0, M_D);
+	UV1 = dmatrix(0, N_D, 0, M_D);
+	UV2 = dmatrix(0, N_D, 0, M_D);
+
+	CP1 = dmatrix(0, N_D, 0, M_D);
+	//CP2 = dmatrix(0, N_D, 0, M_D);
+
+	//открываем нужные файлы
+	FP.open("P.txt");
+	FE1.open("E1.txt");
+	FE2.open("E2.txt");
+	FU1.open("U1.txt");
+	FU2.open("U2.txt");
+	FV1.open("V1.txt");
+	FV2.open("V2.txt");
+	FK1.open("K1.txt");
+	FCP1.open("CP1.txt");
+
+	FUV1.open("UV1.txt");
+	FUV2.open("UV2.txt");
+
+	FRo1.open("Ro1.txt");
+	FRo2.open("Ro2.txt");
+	FJ2.open("J2.txt");
+	Fa.open("a.txt");
+
+
+	//объявляем константы
+	DX = 1.0 / N;
+	DY = 1.0 / N;
+	DT = DX / (8 * 632.45);
+	//K1 = 1.4;
+	//CP1 = 520;
+	pi = 3.14;
+	d = 1.0e-10;
+	mu = 4e-5;
+	alfa = 4;
+	beta = -0.1;
+
+	printf("Progress:\n");
+
+	int total_c = 1500;
+	int save = 10;
+
+
+	// Начальные условия
+	for (int I = 1; I <= N; I++)
+	{
+		for (int J = 1; J <= M; J++)
+		{
+			P[I][J] = 1e+5;
+		}
+	}
+	//P[N_D / 2 ][N_D / 2 ] = 1.0e+5;
+	//P[N_D / 2][N_D / 2] = 100.0e+5;
+	//круг
+	//концентрация
+	for (int I = 1; I <= N; I++)
+	{
+		for (int J = 1; J <= M; J++)
+		{
+			if ((I - (N_D / 2))*(I - (N_D / 2)) + (J - (N_D / 2)) * (J - (N_D / 2)) == 100)
+			{
+				a[I][J] = 0.997;				
+			}
+			else
+			{
+				a[I][J] = 0.9999;
+			}
+
+		}
+	}
+	//поле
+	//остальные параметры 
+	//скорость 12 по х у , плотности, энергии, давление
+	for (int I = 1; I <= N; I++)
+	{
+		for (int J = 1; J <= M; J++)
+		{
+			U1[I][J] = 0;
+			V1[I][J] = 0;
+			U2[I][J] = 0;
+			V2[I][J] = 0;
+
+			//K1[I][J] = (6+2)/6;//в центре = по полю??
+			K1[I][J] = 1.4;
+			//CP1[I][J] = ((6/2)+1)*8.31;//в центре = по полю??
+			CP1[I][J] = 20.8;
+
+			Ro1[I][J] = a[I][J] * (P[I][J] / (287 * 300));
+			Ro2[I][J] = 1000 * (1 - a[I][J]);
+
+
+			J2[I][J] = 4180 * 300;//в центре = по полю??
+			E1[I][J] = a[I][J] * P[I][J] / ((K1[I][J] - 1)*Ro1[I][J]) + 0.5 * (U1[I][J] * U1[I][J] + V1[I][J] * V1[I][J]);
+			E2[I][J] = J2[I][J] + 0.5 * (U2[I][J] * U2[I][J] + V2[I][J] * V2[I][J]);
+		}
+	}
+
+	//осн характеристике в центра поля
+	/*
+	U1[N_D / 2][N_D / 2] = 0;
+	V1[N_D / 2][N_D / 2] = 0;
+	U2[N_D / 2][N_D / 2] = 0;
+	V2[N_D / 2][N_D / 2] = 0;
+	*/
+	K1[N_D / 2][N_D / 2] = 1.2;//в центре = по полю??
+	a[N_D / 2][N_D / 2] = 0.9999;
+	P[N_D / 2][N_D / 2] = 100.0e+5;
+	Ro1[N_D / 2][N_D / 2] = a[N_D / 2][N_D / 2] * (P[N_D / 2][N_D / 2] / (287 * 300));
+	Ro2[N_D / 2][N_D / 2] = 1000 * (1 - a[N_D / 2][N_D / 2]);
+	CP1[N_D / 2][N_D / 2] =33.8;//в центре = по полю??
+	J2[N_D / 2][N_D / 2] = 4180 * 600;//в центре = по полю??
+	E1[N_D / 2][N_D / 2] = a[N_D / 2][N_D / 2] * P[N_D / 2][N_D / 2] / ((K1[N_D / 2][N_D / 2] - 1)*Ro1[N_D / 2][N_D / 2]) + 0.5 * (U1[N_D / 2][N_D / 2] * U1[N_D / 2][N_D / 2] + V1[N_D / 2][N_D / 2] * V1[N_D / 2][N_D / 2]);
+	E2[N_D / 2][N_D / 2] = J2[N_D / 2][N_D / 2] + 0.5 * (U2[N_D / 2][N_D / 2] * U2[N_D / 2][N_D / 2] + V2[N_D / 2][N_D / 2] * V2[N_D / 2][N_D / 2]);
+	//....................................................................................................................................................
+	for (I = 1; I <= N; I++)
+	{
+		for (J = 1; J <= M; J++)
+		{
+			FP << P[I][J] << " ";
+			FE1 << E1[I][J] << " ";
+			FE2 << E2[I][J] << " ";
+			FU1 << U1[I][J] << " ";
+			FU2 << U2[I][J] << " ";
+			FV1 << V1[I][J] << " ";
+			FV2 << V2[I][J] << " ";
+			FRo1 << Ro1[I][J] << " ";
+			FRo2 << Ro2[I][J] << " ";
+			FJ2 << J2[I][J] << " ";
+			Fa << a[I][J] << " ";
+			FK1 << K1[I][J] << " ";
+			FCP1 << CP1[I][J] << " ";
+			FUV1 << UV1[I][J] << " ";
+			FUV2 << UV2[I][J] << " ";
+		}
+		FP << endl;
+		FE1 << endl;
+		FE2 << endl;
+		FU1 << endl;
+		FU2 << endl;
+		FV1 << endl;
+		FV2 << endl;
+
+		FRo1 << endl;
+		FRo2 << endl;
+		FJ2 << endl;
+		Fa << endl;
+		FK1 << endl;
+		FCP1 << endl;
+
+		FUV1 << endl;
+		FUV2 << endl;
+
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------------
+	for (NC = 1; NC < total_c; NC++)
+	{
+
+
+		//Граничные условия
+		for (int j = 0; j <= N + 1; j++)
+		{
+
+
+			U1[0][j] = -U1[1][j];
+			V1[0][j] = V1[1][j];
+			U2[0][j] = -U2[1][j];
+			V2[0][j] = V2[1][j];
+			P[0][j] = P[1][j];
+			E1[0][j] = E1[1][j];
+			E2[0][j] = E2[1][j];
+			J2[0][j] = J2[1][j];
+			a[0][j] = a[1][j];
+			Ro1[0][j] = Ro1[1][j];
+			Ro2[0][j] = Ro2[1][j];
+
+			CP1[0][j] = CP1[1][j];
+			K1[0][j] = K1[1][j];
+
+			U1[N + 1][j] = -U1[N][j];
+			V1[N + 1][j] = V1[N][j];
+			U2[N + 1][j] = -U2[N][j];
+			V2[N + 1][j] = V2[N][j];
+			P[N + 1][j] = P[N][j];
+			E1[N + 1][j] = E1[N][j];
+			E2[N + 1][j] = E2[N][j];
+			J2[N + 1][j] = J2[N][j];
+			a[N + 1][j] = a[N][j];
+			Ro1[N + 1][j] = Ro1[N][j];
+			Ro2[N + 1][j] = Ro2[N][j];
+
+			CP1[N + 1][j] = CP1[N][j];
+			K1[N + 1][j] = K1[N][j];
+		}
+
+		for (int i = 0; i <= N + 1; i++)
+		{
+
+
+			U1[i][0] = U1[i][1];
+			V1[i][0] = -V1[i][1];
+			U2[i][0] = U2[i][1];
+			V2[i][0] = -V2[i][1];
+			P[i][0] = P[i][1];
+			E1[i][0] = E1[i][1];
+			E2[i][0] = E2[i][1];
+			J2[i][0] = J2[i][1];
+			a[i][0] = a[i][1];
+			Ro1[i][0] = Ro1[i][1];
+			Ro2[i][0] = Ro2[i][1];
+
+			K1[i][0] = K1[i][1];
+			CP1[i][0] = CP1[i][1];
+
+			U1[i][N + 1] = U1[i][N];
+			V1[i][N + 1] = -V1[i][N];
+			U2[i][N + 1] = U2[i][N];
+			V2[i][N + 1] = -V2[i][N];
+			P[i][N + 1] = P[i][N];
+			E1[i][N + 1] = E1[i][N];
+			E2[i][N + 1] = E2[i][N];
+			J2[i][N + 1] = J2[i][N];
+			a[i][N + 1] = a[i][N];
+			Ro1[i][N + 1] = Ro1[i][N];
+			Ro2[i][N + 1] = Ro2[i][N];
+
+			K1[i][N + 1] = K1[i][N];
+			CP1[i][N + 1] = CP1[i][N];
+		}
+		//....................................................................................................................................
+		//Эйлеров этап
+		for (int I = 1; I <= N; I++)
+		{
+			for (int J = 1; J <= M; J++)
+			{
+				//P[i+0.5][j]...
+				A1 = (P[I][J] + P[I + 1][J]) / 2;
+				A2 = (P[I - 1][J] + P[I][J]) / 2;
+				A3 = (P[I][J] + P[I][J + 1]) / 2;
+				A4 = (P[I][J - 1] + P[I][J]) / 2;
+
+
+				UE1[I][J] = U1[I][J] - a[I][J] * (A1 - A2)*DT / (Ro1[I][J] * DX);
+				VE1[I][J] = V1[I][J] - a[I][J] * (A3 - A4)*DT / (Ro1[I][J] * DY);
+				UE2[I][J] = U2[I][J] - (1 - a[I][J]) * (A1 - A2)*DT / (Ro2[I][J] * DX);
+				VE2[I][J] = V2[I][J] - (1 - a[I][J]) *(A3 - A4)*DT / (Ro2[I][J] * DY);
+				EE2[I][J] = J2[I][J] + 0.5*((UE1[I][J] * UE1[I][J]) + (VE1[I][J] * VE1[I][J]));
+
+				//A5 = (U1[I][J] + U1[I + 1][J]) / 2;
+				//A6 = (U1[I - 1][J] + U1[I][J]) / 2;
+				//A7 = (V1[I][J] + V1[I][J + 1]) / 2;
+				//A8 = (V1[I][J - 1] + V1[I][J]) / 2;
+
+				//U2[i+0.5][j]...
+				A52 = (U2[I][J] + U2[I + 1][J]) / 2;
+				A62 = (U2[I - 1][J] + U2[I][J]) / 2;
+				A72 = (V2[I][J] + V2[I][J + 1]) / 2;
+				A82 = (V2[I][J - 1] + V2[I][J]) / 2;
+
+				//UU1[I][J] = (1 - alfa)*U1[I][J] + alfa * UE1[I][J];
+				//VV1[I][J] = (1 - alfa)*V1[I][J] + alfa * VE1[I][J];
+				//UU2[I][J] = (1 - alfa)*U2[I][J] + alfa * UE2[I][J];
+				//VV2[I][J] = (1 - alfa)*V2[I][J] + alfa * VE2[I][J];
+
+				//UU1[i+0.5][j]...
+				//A13 = (UU1[I][J] + UU1[I + 1][J]) / 2;
+			//	A23 = (UU1[I - 1][J] + UU1[I][J]) / 2;
+			//	A33 = (VV1[I][J] + VV1[I][J + 1]) / 2;
+				//A43 = (VV1[I][J - 1] + VV1[I][J]) / 2;
+
+				//a[i+0.5][j]...
+				//Aa1 = (a[I][J] + a[I + 1][J]) / 2;
+				//Aa2 = (a[I][J] + a[I][J]) / 2;
+				//Aa3 = (a[I][J] + a[I][J + 1]) / 2;
+				//Aa4 = (a[I][J] + a[I][J - 1]) / 2;
+
+				//EE1[I][J] = E1[I][J] - (EE2[I][J] - E2[I][J])*(Ro2[I][J] / Ro1[I][J]) - (1 / DX)*(DT / Ro1[I][J])*(1 / 8)*((a[I][J] + a[I+1][J])* (P[I][J] + P[I+1][J])* (UU1[I][J] + UU1[I+1][J]) - (a[I][J] + a[I-1][J])* (P[I][J] + P[I-1][J])* (UU1[I][J] + UU1[I-1][J]))
+					//- (1 / (DY))*(DT / Ro1[I][J])*(1 / 8)*((a[I][J] + a[I][J+1])*(P[I][J] + P[I][J+1])*(VV1[I][J] + VV1[I][J+1]) - (a[I][J] + a[I][J-1])*(P[I][J] + P[I][J-1])*(VV1[I][J] + VV1[I][J-1]))
+					//- (1 / DX)*(DT / Ro1[I][J])*(1 / 4)*((1 - 0.5*(a[I][J] + a[I+1][J])) * (P[I][J] + P[I+1][J]) * (U2[I][J] + U2[I+1][J]) - (1 - 0.5*(a[I][J] + a[I-1][J])) * (P[I][J] + P[I-1][J]) * (U2[I][J] + U2[I-1][J]))
+				//	- (1 / (DY))*(DT / Ro1[I][J])*(1 / 4)*((1 - 0.5*(a[I][J] + a[I][J+1])) * (P[I][J] + P[I][J+1]) * (V2[I][J] + V2[I][J+1]) - (1 - 0.5*(a[I][J] + a[I][J-1])) * (P[I][J] + P[I][J-1]) * (V2[I][J] + V2[I][J-1]));
+
+				//EE1[I][J] = E1[I][J] - (EE2[I][J] - E2[I][J])*(Ro2[I][J] / Ro1[I][J]) - (Aa1*A1*A13 - Aa2 * A2*A23)*DT / (DX*Ro1[I][J])
+				//- (Aa3 * A3*A33 - Aa4 * A4*A43)*DT / (DY*Ro1[I][J]) -
+				//	(((1 - Aa1)*A1*A52 - Aa2 * A2*A62)*DT / (DX*Ro1[I][J]) - ((1 - Aa3)*A3*A72 - Aa4 * A4*A82)*DT / (DX*Ro1[I][J]));
+			}
+		}
+
+		for (int I = 0; I <= N + 1; I++)
+		{
+			for (int J = 0; J <= M + 1; J++)
+			{
+				UU1[I][J] = (1 - alfa)*U1[I][J] + alfa * UE1[I][J];
+				VV1[I][J] = (1 - alfa)*V1[I][J] + alfa * VE1[I][J];
+			}
+		}
+
+		for (int I = 1; I <= N; I++)
+		{
+			for (int J = 1; J <= M; J++)
+			{
+				EE1[I][J] = E1[I][J] - (EE2[I][J] - E2[I][J])*(Ro2[I][J] / Ro1[I][J]) - (1 / DX)*(DT / Ro1[I][J])*(1 / 8)*((a[I][J] + a[I + 1][J])* (P[I][J] + P[I + 1][J])* (UU1[I][J] + UU1[I + 1][J]) - (a[I][J] + a[I - 1][J])* (P[I][J] + P[I - 1][J])* (UU1[I][J] + UU1[I - 1][J]))
+					- (1 / (DY))*(DT / Ro1[I][J])*(1 / 8)*((a[I][J] + a[I][J + 1])*(P[I][J] + P[I][J + 1])*(VV1[I][J] + VV1[I][J + 1]) - (a[I][J] + a[I][J - 1])*(P[I][J] + P[I][J - 1])*(VV1[I][J] + VV1[I][J - 1]))
+					- (1 / DX)*(DT / Ro1[I][J])*(1 / 4)*((1 - 0.5*(a[I][J] + a[I + 1][J])) * (P[I][J] + P[I + 1][J]) * (U2[I][J] + U2[I + 1][J]) - (1 - 0.5*(a[I][J] + a[I - 1][J])) * (P[I][J] + P[I - 1][J]) * (U2[I][J] + U2[I - 1][J]))
+					- (1 / (DY))*(DT / Ro1[I][J])*(1 / 4)*((1 - 0.5*(a[I][J] + a[I][J + 1])) * (P[I][J] + P[I][J + 1]) * (V2[I][J] + V2[I][J + 1]) - (1 - 0.5*(a[I][J] + a[I][J - 1])) * (P[I][J] + P[I][J - 1]) * (V2[I][J] + V2[I][J - 1]));
+			}
+		}
+
+		//...........................................................................................................................................
+		//гу
+		for (int j = 0; j <= N + 1; j++)
+		{
+
+
+			U1[0][j] = -U1[1][j];
+			V1[0][j] = V1[1][j];
+			U2[0][j] = -U2[1][j];
+			V2[0][j] = V2[1][j];
+			P[0][j] = P[1][j];
+			E1[0][j] = E1[1][j];
+			E2[0][j] = E2[1][j];
+			J2[0][j] = J2[1][j];
+			a[0][j] = a[1][j];
+
+			K1[0][j] = K1[1][j];
+			CP1[0][j] = CP1[1][j];
+
+			UE1[0][j] = -UE1[1][j];
+			VE1[0][j] = VE1[1][j];
+			EE1[0][j] = EE1[1][j];
+
+			UE2[0][j] = -UE2[1][j];
+			VE2[0][j] = VE2[1][j];
+			EE2[0][j] = EE2[1][j];
+			Ro1[0][j] = Ro1[1][j];
+			Ro2[0][j] = Ro2[1][j];
+
+
+
+			U1[N + 1][j] = -U1[N][j];
+			V1[N + 1][j] = V1[N][j];
+			U2[N + 1][j] = -U2[N][j];
+			V2[N + 1][j] = V2[N][j];
+			P[N + 1][j] = P[N][j];
+			E1[N + 1][j] = E1[N][j];
+			E2[N + 1][j] = E2[N][j];
+			J2[N + 1][j] = J2[N][j];
+			a[N + 1][j] = a[N][j];
+
+			UE1[N + 1][j] = -UE1[N][j];
+			VE1[N + 1][j] = VE1[N][j];
+			EE1[N + 1][j] = EE1[N][j];
+
+			UE2[N + 1][j] = -UE2[N][j];
+			VE2[N + 1][j] = VE2[N][j];
+			EE2[N + 1][j] = EE2[N][j];
+			Ro1[N + 1][j] = Ro1[N][j];
+			Ro2[N + 1][j] = Ro2[N][j];
+
+			K1[N + 1][j] = K1[N][j];
+			CP1[N + 1][j] = CP1[N][j];
+		}
+
+		for (int i = 0; i <= N + 1; i++)
+		{
+
+
+			U1[i][0] = U1[i][1];
+			V1[i][0] = -V1[i][1];
+			U2[i][0] = U2[i][1];
+			V2[i][0] = -V2[i][1];
+			P[i][0] = P[i][1];
+			E1[i][0] = E1[i][1];
+			E2[i][0] = E2[i][1];
+			J2[i][0] = J2[i][1];
+			a[i][0] = a[i][1];
+
+			K1[i][0] = K1[i][1];
+			CP1[i][0] = CP1[i][1];
+
+			UE1[i][0] = UE1[i][1];
+			VE1[i][0] = -VE1[i][1];
+			EE1[i][0] = EE1[i][1];
+
+			UE2[i][0] = UE2[i][1];
+			VE2[i][0] = -VE2[i][1];
+			EE2[i][0] = EE2[i][1];
+			Ro1[i][0] = Ro1[i][1];
+			Ro2[i][0] = Ro2[i][1];
+
+			U1[i][N + 1] = U1[i][N];
+			V1[i][N + 1] = -V1[i][N];
+			U2[i][N + 1] = U2[i][N];
+			V2[i][N + 1] = -V2[i][N];
+			P[i][N + 1] = P[i][N];
+			E1[i][N + 1] = E1[i][N];
+			E2[i][N + 1] = E2[i][N];
+			J2[i][N + 1] = J2[i][N];
+			a[i][N + 1] = a[i][N];
+
+			UE1[i][M + 1] = UE1[i][M];
+			VE1[i][M + 1] = -VE1[i][M];
+			EE1[i][M + 1] = EE1[i][M];
+
+			UE2[i][M + 1] = UE2[i][M];
+			VE2[i][M + 1] = -VE2[i][M];
+			EE2[i][M + 1] = EE2[i][M];
+			Ro1[i][N + 1] = Ro1[i][N];
+			Ro2[i][N + 1] = Ro2[i][N];
+
+			K1[i][N + 1] = K1[i][N];
+			CP1[i][N + 1] = CP1[i][N];
+		}
+		//................................................................................................................................................................
+		//Лагранжев этап
+		//Задаем tx, ty
+		for (int i = 1; i <= N; i++)//ЧЕК ЗИС
+		{
+			for (int j = 1; j <= M; j++)
+			{
+				n[i][j] = 6 * (1 - a[i][j]) / (pi*d*d*d)*DX*DY*DY;
+				Re[i][j] = Ro1[i][j] * a[i][j] * d / mu * sqrt((U1[i][j] - U2[i][j])*(U1[i][j] - U2[i][j]) + (V1[i][j] - V2[i][j])*(V1[i][j] - V2[i][j]));
+
+				if (Re[i][j] <= 1)
+				{
+					tx[i][j] = 0;
+					ty[i][j] = 0;
+				}
+				if (Re[i][j] > 1 && Re[i][j] <= 700)
+				{
+					tx[i][j] = n[i][j] * pi*d*d*Ro1[i][j] / a[i][j] * (24 / Re[i][j] + 4 / pow(Re[i][j], 0.33))*sqrt((UE1[i][j] - UE2[i][j])*(UE1[i][j] - UE2[i][j]) + (VE1[i][j] - VE2[i][j])*(VE1[i][j] - VE2[i][j]))*(UE1[i][j] - UE2[i][j]) * 1 / 8;
+					ty[i][j] = n[i][j] * pi*d*d*Ro1[i][j] / a[i][j] * (24 / Re[i][j] + 4 / pow(Re[i][j], 0.33))*sqrt((UE1[i][j] - UE2[i][j])*(UE1[i][j] - UE2[i][j]) + (VE1[i][j] - VE2[i][j])*(VE1[i][j] - VE2[i][j]))*(VE1[i][j] - VE2[i][j]) * 1 / 8;
+				}
+				if (Re[i][j] > 700)
+				{
+					tx[i][j] = n[i][j] * pi*d*d*Ro1[i][j] / a[i][j] * (4.3*pow(log10(Re[i][j]), -2))*sqrt((UE1[i][j] - UE2[i][j])*(UE1[i][j] - UE2[i][j]) + (VE1[i][j] - VE2[i][j])*(VE1[i][j] - VE2[i][j]))*(UE1[i][j] - UE2[i][j]) * 1 / 8;
+					ty[i][j] = n[i][j] * pi*d*d*Ro1[i][j] / a[i][j] * (4.3*pow(log10(Re[i][j]), -2))*sqrt((UE1[i][j] - UE2[i][j])*(UE1[i][j] - UE2[i][j]) + (VE1[i][j] - VE2[i][j])*(VE1[i][j] - VE2[i][j]))*(VE1[i][j] - VE2[i][j]) * 1 / 8;
+				}
+			}
+		}
+
+		for (int I = 1; I <= N; I++)
+		{
+			for (int J = 1; J <= M; J++)
+			{
+				//1
+				//U1
+				A1 = (UE1[I][J] + UE1[I + 1][J]) / 2;
+				if (A1 >= 0)
+				{
+					RU1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * 1 * A1;
+					RUmu1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * mu * A1;
+					RUK1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * K1[I][J] * A1;
+					RUCP1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * CP1[I][J] * A1;
+					RUa1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * a[I][J] * A1;
+					RUU1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * UE1[I][J] * A1;
+					RUV1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * VE1[I][J] * A1;
+					RUE1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I + 1][J]) * EE1[I][J] * A1;
+				}
+				else
+				{
+					RU1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * 1 * A1;
+					RUmu1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * mu * A1;
+					RUK1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * K1[I + 1][J] * A1;
+					RUCP1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * CP1[I + 1][J] * A1;
+					RUa1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * a[I + 1][J] * A1;
+					RUU1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * UE1[I + 1][J] * A1;
+					RUV1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * VE1[I + 1][J] * A1;
+					RUE1[I][J] = ((1 - beta)*Ro1[I + 1][J] + beta * Ro1[I][J]) * EE1[I + 1][J] * A1;
+				}
+				//V1
+				A1 = (VE1[I][J] + VE1[I][J + 1]) / 2;
+				if (A1 >= 0)
+				{
+					RV1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * 1 * A1;
+					RVmu1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * mu * A1;
+					RVK1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * K1[I][J] * A1;
+					RVCP1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * CP1[I][J] * A1;
+					RVa1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * a[I][J] * A1;
+					RVU1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * UE1[I][J] * A1;
+					RVV1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * VE1[I][J] * A1;
+					RVE1[I][J] = ((1 - beta)*Ro1[I][J] + beta * Ro1[I][J + 1]) * EE1[I][J] * A1;
+				}
+				else
+				{
+					RV1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * 1 * A1;
+					RVmu1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * mu * A1;
+					RVK1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * K1[I][J + 1] * A1;
+					RVCP1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * CP1[I][J + 1] * A1;
+					RVa1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * a[I][J + 1] * A1;
+					RVU1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * UE1[I][J + 1] * A1;
+					RVV1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * VE1[I][J + 1] * A1;
+					RVE1[I][J] = ((1 - beta)*Ro1[I][J + 1] + beta * Ro1[I][J]) * EE1[I][J + 1] * A1;
+				}
+				//2
+				//U2
+				A1 = (UE2[I][J] + UE2[I + 1][J]) / 2;
+				if (A1 >= 0)
+				{
+					RU2[I][J] = Ro2[I][J] * 1 * A1;
+					RUU2[I][J] = Ro2[I][J] * UE2[I][J] * A1;
+					RUV2[I][J] = Ro2[I][J] * VE2[I][J] * A1;
+					RUJ2[I][J] = Ro2[I][J] * J2[I][J] * A1;
+					RUE2[I][J] = Ro2[I][J] * EE2[I][J] * A1;
+
+				}
+				else
+				{
+					RU2[I][J] = Ro2[I + 1][J] * 1 * A1;
+					RUU2[I][J] = Ro2[I + 1][J] * UE2[I + 1][J] * A1;
+					RUV2[I][J] = Ro2[I + 1][J] * VE2[I + 1][J] * A1;
+					RUJ2[I][J] = Ro2[I + 1][J] * J2[I + 1][J] * A1;
+					RUE2[I][J] = Ro2[I + 1][J] * EE2[I + 1][J] * A1;
+				}
+				//V2
+				A1 = (VE2[I][J] + VE2[I][J + 1]) / 2;
+				if (A1 >= 0)
+				{
+					RV2[I][J] = Ro2[I][J] * 1 * A1;
+					RVU2[I][J] = Ro2[I][J] * UE2[I][J] * A1;
+					RVV2[I][J] = Ro2[I][J] * VE2[I][J] * A1;
+					RVJ2[I][J] = Ro2[I][J] * J2[I][J] * A1;
+					RVE2[I][J] = Ro2[I][J] * EE2[I][J] * A1;
+
+				}
+				else
+				{
+					RV2[I][J] = Ro2[I][J + 1] * 1 * A1;
+					RVU2[I][J] = Ro2[I][J + 1] * UE2[I][J + 1] * A1;
+					RVV2[I][J] = Ro2[I][J + 1] * VE2[I][J + 1] * A1;
+					RVJ2[I][J] = Ro2[I][J + 1] * J2[I][J + 1] * A1;
+					RVE2[I][J] = Ro2[I][J + 1] * EE2[I][J + 1] * A1;
+				}
+			}
+		}
+		//...........................................................................................................................................
+		//гу
+		for (int j = 0; j <= N + 1; j++)
+		{
+
+
+			U1[0][j] = -U1[1][j];
+			V1[0][j] = V1[1][j];
+			U2[0][j] = -U2[1][j];
+			V2[0][j] = V2[1][j];
+			P[0][j] = P[1][j];
+			E1[0][j] = E1[1][j];
+			E2[0][j] = E2[1][j];
+			J2[0][j] = J2[1][j];
+			a[0][j] = a[1][j];
+
+			K1[0][j] = K1[1][j];
+			CP1[0][j] = CP1[1][j];
+
+			UE1[0][j] = -UE1[1][j];
+			VE1[0][j] = VE1[1][j];
+			EE1[0][j] = EE1[1][j];
+
+			UE2[0][j] = -UE2[1][j];
+			VE2[0][j] = VE2[1][j];
+			EE2[0][j] = EE2[1][j];
+			Ro1[0][j] = Ro1[1][j];
+			Ro2[0][j] = Ro2[1][j];
+
+			U1[N + 1][j] = -U1[N][j];
+			V1[N + 1][j] = V1[N][j];
+			U2[N + 1][j] = -U2[N][j];
+			V2[N + 1][j] = V2[N][j];
+			P[N + 1][j] = P[N][j];
+			E1[N + 1][j] = E1[N][j];
+			E2[N + 1][j] = E2[N][j];
+			J2[N + 1][j] = J2[N][j];
+			a[N + 1][j] = a[N][j];
+
+			UE1[N + 1][j] = -UE1[N][j];
+			VE1[N + 1][j] = VE1[N][j];
+			EE1[N + 1][j] = EE1[N][j];
+
+			UE2[N + 1][j] = -UE2[N][j];
+			VE2[N + 1][j] = VE2[N][j];
+			EE2[N + 1][j] = EE2[N][j];
+			Ro1[N + 1][j] = Ro1[N][j];
+			Ro2[N + 1][j] = Ro2[N][j];
+
+			K1[N + 1][j] = K1[1][N];
+			CP1[N + 1][j] = CP1[1][N];
+		}
+
+		for (int i = 0; i <= N + 1; i++)
+		{
+
+
+			U1[i][0] = U1[i][1];
+			V1[i][0] = -V1[i][1];
+			U2[i][0] = U2[i][1];
+			V2[i][0] = -V2[i][1];
+			P[i][0] = P[i][1];
+			E1[i][0] = E1[i][1];
+			E2[i][0] = E2[i][1];
+			J2[i][0] = J2[i][1];
+			a[i][0] = a[i][1];
+
+			K1[i][0] = K1[i][1];
+			CP1[i][0] = CP1[i][1];
+
+			UE1[i][0] = UE1[i][1];
+			VE1[i][0] = -VE1[i][1];
+			EE1[i][0] = EE1[i][1];
+
+			UE2[i][0] = UE2[i][1];
+			VE2[i][0] = -VE2[i][1];
+			EE2[i][0] = EE2[i][1];
+			Ro1[i][0] = Ro1[i][1];
+			Ro2[i][0] = Ro2[i][1];
+
+			U1[i][N + 1] = U1[i][N];
+			V1[i][N + 1] = -V1[i][N];
+			U2[i][N + 1] = U2[i][N];
+			V2[i][N + 1] = -V2[i][N];
+			P[i][N + 1] = P[i][N];
+			E1[i][N + 1] = E1[i][N];
+			E2[i][N + 1] = E2[i][N];
+			J2[i][N + 1] = J2[i][N];
+			a[i][N + 1] = a[i][N];
+
+			UE1[i][M + 1] = UE1[i][M];
+			VE1[i][M + 1] = -VE1[i][M];
+			EE1[i][M + 1] = EE1[i][M];
+
+			UE2[i][M + 1] = UE2[i][M];
+			VE2[i][M + 1] = -VE2[i][M];
+			EE2[i][M + 1] = EE2[i][M];
+			Ro1[i][N + 1] = Ro1[i][N];
+			Ro2[i][N + 1] = Ro2[i][N];
+
+			K1[i][N + 1] = K1[i][N];
+			CP1[i][N + 1] = CP1[i][N];
+		}
+		//...............................................................................................................................................................
+		//Заключительный этап
+		for (int I = 1; I <= N; I++)
+		{
+			for (int J = 1; J <= M; J++)
+			{
+				//Уравнение неразрывности
+				Ro11[I][J] = Ro1[I][J] - ((RU1[I][J] - RU1[I - 1][J])*DT / DX) - ((RV1[I][J] - RV1[I][J - 1])*DT / DY);
+				Ro21[I][J] = Ro2[I][J] - ((RU2[I][J] - RU2[I - 1][J])*DT / DX) - ((RV2[I][J] - RV2[I][J - 1])*DT / DY);
+
+				K11[I][J] = K1[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((RUK1[I][J] - RUK1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVK1[I][J] - RVK1[I][J - 1])*DT / (DY*Ro11[I][J]));
+				CP11[I][J] = CP1[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((RUCP1[I][J] - RUCP1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVCP1[I][J] - RVCP1[I][J - 1])*DT / (DY*Ro11[I][J]));
+
+
+				//a[I][J] = 1 - (Ro21[I][J] / 1000);
+				a11[I][J] = a[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((RUa1[I][J] - RUa1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVa1[I][J] - RVa1[I][J - 1])*DT / (DY*Ro11[I][J]));
+				mu11[I][J] = mu * (Ro1[I][J] / Ro11[I][J]) - ((RUmu1[I][J] - RUmu1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVmu1[I][J] - RVmu1[I][J - 1])*DT / (DY*Ro11[I][J]));
+
+				//Уравнение сохр импульса по осям координат 
+				U11[I][J] = UE1[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((RUU1[I][J] - RUU1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVU1[I][J] - RVU1[I][J - 1])*DT / (DY*Ro11[I][J])) - tx[I][J] * DT / Ro11[I][J];
+				V11[I][J] = VE1[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((RUV1[I][J] - RUV1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVV1[I][J] - RVV1[I][J - 1])*DT / (DY*Ro11[I][J])) - ty[I][J] * DT / Ro11[I][J];
+				U21[I][J] = UE2[I][J] * (Ro2[I][J] / Ro21[I][J]) - ((RUU2[I][J] - RUU2[I - 1][J])*DT / (DX*Ro21[I][J])) - ((RVU2[I][J] - RVU2[I][J - 1])*DT / (DY*Ro21[I][J])) + tx[I][J] * DT / Ro21[I][J];
+				V21[I][J] = VE2[I][J] * (Ro2[I][J] / Ro21[I][J]) - ((RUV2[I][J] - RUV2[I - 1][J])*DT / (DX*Ro21[I][J])) - ((RVV2[I][J] - RVV2[I][J - 1])*DT / (DY*Ro21[I][J])) + ty[I][J] * DT / Ro21[I][J];
+
+				//Уравнение сохр внутренней удельной эн 
+				J22[I][J] = J2[I][J] * (Ro2[I][J] / Ro21[I][J]) - ((RUJ2[I][J] - RUJ2[I - 1][J])*DT / (DX*Ro21[I][J])) - ((RVJ2[I][J] - RVJ2[I][J - 1])*DT / (DY*Ro21[I][J]));
+				E21[I][J] = J22[I][J] + (((U21[I][J] * U21[I][J]) + (V21[I][J] * V21[I][J])) / 2);
+
+				//Уравнение сохр полной удельной эн смеси
+				E11[I][J] = EE1[I][J] * (Ro1[I][J] / Ro11[I][J]) - ((Ro21[I][J] * E21[I][J] - Ro2[I][J] * EE2[I][J]) / Ro11[I][J])
+					- ((RUE1[I][J] - RUE1[I - 1][J])*DT / (DX*Ro11[I][J])) - ((RVE1[I][J] - RVE1[I][J - 1])*DT / (DY*Ro11[I][J]))
+					- ((RUE2[I][J] - RUE2[I - 1][J])*DT) / (DX*Ro11[I][J]) - ((RVE2[I][J] - RVE2[I][J - 1])*DT) / (DY*Ro11[I][J]);
+
+				//Давление
+				//P[I][J] = (K1 - 1)*(Ro11[I][J] / a[I][J]) * (E11[I][J] - 0.5*((U11[I][J] * U11[I][J] + V11[I][J] * V11[I][J]) +
+					//(Ro1[I][J] / Ro11[I][J])*((U11[I][J] - UE1[I][J])*(U11[I][J] - UE1[I][J]) + (V11[I][J] - VE1[I][J])*(V11[I][J] - VE1[I][J]))));
+
+				UV1[I][J] = sqrt(U11[I][J] * U11[I][J] + V11[I][J] * V11[I][J]);
+				UV2[I][J] = sqrt(U21[I][J] * U21[I][J] + V21[I][J] * V21[I][J]);
+				
+			}
+		}
+		for (I = 1; I <= N; I++)
+		{
+			for (J = 1; J <= M; J++)
+			{
+				//Давление
+				P[I][J] = (K1[I][J] - 1)*(Ro1[I][J] / a[I][J]) * (E11[I][J] - 0.5*((U11[I][J] * U11[I][J] + V11[I][J] * V11[I][J]) +
+					(Ro1[I][J] / Ro11[I][J])*((U11[I][J] - UE1[I][J])*(U11[I][J] - UE1[I][J]) + (V11[I][J] - VE1[I][J])*(V11[I][J] - VE1[I][J]))));
+			}
+		}
+		//"Пересчитываем то, что нужно" (с) Павел Сергеевич
+		for (I = 1; I <= N; I++)
+		{
+			for (J = 1; J <= M; J++)
+			{
+				Ro1[I][J] = Ro11[I][J];
+				Ro2[I][J] = Ro21[I][J];
+				J2[I][J] = J22[I][J];
+				CP1[I][J] = CP11[I][J];
+				K1[I][J] = K11[I][J];
+				a[I][J] = a11[I][J];
+
+				U1[I][J] = U11[I][J];
+				U2[I][J] = U21[I][J];
+				V1[I][J] = V11[I][J];
+				V2[I][J] = V21[I][J];
+				E2[I][J] = E21[I][J];
+				E1[I][J] = E11[I][J];
+				
+
+				//mu[I][J] = mu11[I][J];
+			}
+		}
+
+
+		if (NC % save == 0)
+		{
+			for (I = 1; I <= N; I++)
+			{
+				for (J = 1; J <= M; J++)
+				{
+					FP << P[I][J] << " ";
+					FE1 << E1[I][J] << " ";
+					FE2 << E2[I][J] << " ";
+					FU1 << U1[I][J] << " ";
+					FU2 << U2[I][J] << " ";
+					FV1 << V1[I][J] << " ";
+					FV2 << V2[I][J] << " ";
+					FRo1 << Ro1[I][J] << " ";
+					FRo2 << Ro2[I][J] << " ";
+					FJ2 << J2[I][J] << " ";
+					Fa << a[I][J] << " ";
+					FK1 << K1[I][J] << " ";
+					FCP1 << CP1[I][J] << " ";
+
+					FUV1 << UV1[I][J] << " ";
+					FUV2 << UV2[I][J] << " ";
+				}
+				FP << endl;
+				FE1 << endl;
+				FE2 << endl;
+				FU1 << endl;
+				FU2 << endl;
+				FV1 << endl;
+				FV2 << endl;
+
+				FRo1 << endl;
+				FRo2 << endl;
+				FJ2 << endl;
+				Fa << endl;
+				FK1 << endl;
+				FCP1 << endl;
+
+				FUV1 << endl;
+				FUV2 << endl;
+			}
+
+		}
+		float progress = NC / float(total_c) * 100;
+		printf("\b\b\b\b\b\b%0*.*f%%", 5, 2, progress);
+	}
+	//закрываем все файлы
+	FP.close();
+	FE1.close();
+	FE2.close();
+	FU1.close();
+	FU2.close();
+	FV1.close();
+	FV2.close();
+
+	FRo1.close();
+	FRo2.close();
+	FJ2.close();
+	Fa.close();
+
+	FK1.close();
+	FCP1.close();
+
+	FUV1.close();
+	FUV2.close();
+
+	free_dmatrix(Ro1, 0, N_D, 0, M_D);
+	free_dmatrix(Ro2, 0, N_D, 0, M_D);
+	free_dmatrix(U1, 0, N_D, 0, M_D);
+	free_dmatrix(U2, 0, N_D, 0, M_D);
+	free_dmatrix(V2, 0, N_D, 0, M_D);
+	free_dmatrix(a, 0, N_D, 0, M_D);
+	free_dmatrix(P, 0, N_D, 0, M_D);
+	free_dmatrix(E1, 0, N_D, 0, M_D);
+	free_dmatrix(E2, 0, N_D, 0, M_D);
+	free_dmatrix(UE1, 0, N_D, 0, M_D);
+	free_dmatrix(VE1, 0, N_D, 0, M_D);
+	free_dmatrix(UE2, 0, N_D, 0, M_D);
+	free_dmatrix(VE2, 0, N_D, 0, M_D);
+	free_dmatrix(EE1, 0, N_D, 0, M_D);
+	free_dmatrix(EE2, 0, N_D, 0, M_D);
+	free_dmatrix(UU1, 0, N_D, 0, M_D);
+	free_dmatrix(VV1, 0, N_D, 0, M_D);
+	free_dmatrix(UU2, 0, N_D, 0, M_D);
+	free_dmatrix(VV2, 0, N_D, 0, M_D);
+	free_dmatrix(J2, 0, N_D, 0, M_D);
+	free_dmatrix(J22, 0, N_D, 0, M_D);
+	//K1 = dmatrix(0, N_D, 0, M_D);
+
+	free_dmatrix(RU1, 0, N_D, 0, M_D);
+	free_dmatrix(RUK1, 0, N_D, 0, M_D);
+	free_dmatrix(RUCP1, 0, N_D, 0, M_D);
+	free_dmatrix(RUU1, 0, N_D, 0, M_D);
+	free_dmatrix(RUV1, 0, N_D, 0, M_D);
+	free_dmatrix(RUE1, 0, N_D, 0, M_D);
+	free_dmatrix(RUa1, 0, N_D, 0, M_D);
+
+	free_dmatrix(RU2, 0, N_D, 0, M_D);
+	free_dmatrix(RUK2, 0, N_D, 0, M_D);
+	free_dmatrix(RUCP2, 0, N_D, 0, M_D);
+	free_dmatrix(RUU2, 0, N_D, 0, M_D);
+	free_dmatrix(RUV2, 0, N_D, 0, M_D);
+	free_dmatrix(RUE2, 0, N_D, 0, M_D);
+	free_dmatrix(RUa2, 0, N_D, 0, M_D);
+
+	free_dmatrix(RV1, 0, N_D, 0, M_D);
+	free_dmatrix(RVK1, 0, N_D, 0, M_D);
+	free_dmatrix(RVCP1, 0, N_D, 0, M_D);
+	free_dmatrix(RVU1, 0, N_D, 0, M_D);
+	free_dmatrix(RVV1, 0, N_D, 0, M_D);
+	free_dmatrix(RVE1, 0, N_D, 0, M_D);
+	free_dmatrix(RVa1, 0, N_D, 0, M_D);
+
+	free_dmatrix(RV2, 0, N_D, 0, M_D);
+	free_dmatrix(RVK2, 0, N_D, 0, M_D);
+	free_dmatrix(RVCP2, 0, N_D, 0, M_D);
+	free_dmatrix(RVU2, 0, N_D, 0, M_D);
+	free_dmatrix(RVV2, 0, N_D, 0, M_D);
+	free_dmatrix(RVE2, 0, N_D, 0, M_D);
+	free_dmatrix(RVa2, 0, N_D, 0, M_D);
+	free_dmatrix(RUJ2, 0, N_D, 0, M_D);
+	free_dmatrix(RVJ2, 0, N_D, 0, M_D);
+	free_dmatrix(RVmu1, 0, N_D, 0, M_D);
+	free_dmatrix(RUmu1, 0, N_D, 0, M_D);
+	free_dmatrix(mu11, 0, N_D, 0, M_D);
+	free_dmatrix(tx, 0, N_D, 0, M_D);
+	free_dmatrix(ty, 0, N_D, 0, M_D);
+	free_dmatrix(Re, 0, N_D, 0, M_D);
+	free_dmatrix(n, 0, N_D, 0, M_D);
+
+	free_dmatrix(a11, 0, N_D, 0, M_D);
+	free_dmatrix(Ro11, 0, N_D, 0, M_D);
+	free_dmatrix(Ro21, 0, N_D, 0, M_D);
+	free_dmatrix(K11, 0, N_D, 0, M_D);
+	free_dmatrix(CP11, 0, N_D, 0, M_D);
+
+	free_dmatrix(U11, 0, N_D, 0, M_D);
+	free_dmatrix(V11, 0, N_D, 0, M_D);
+	free_dmatrix(V21, 0, N_D, 0, M_D);
+	free_dmatrix(U21, 0, N_D, 0, M_D);
+	free_dmatrix(J21, 0, N_D, 0, M_D);
+	free_dmatrix(E21, 0, N_D, 0, M_D);
+	free_dmatrix(E11, 0, N_D, 0, M_D);
+
+	free_dmatrix(K1, 0, N_D, 0, M_D);
+	free_dmatrix(CP1, 0, N_D, 0, M_D);
+
+	return 0;
+}
