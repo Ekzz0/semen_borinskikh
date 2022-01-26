@@ -1,0 +1,144 @@
+import logging
+import calendar
+import datetime
+import os
+import numpy
+import pandas
+
+
+def log(function):
+    logger = logging.getLogger(f'{function.__name__}_logger')
+    logger.setLevel(0)
+
+    def wrapper(*args, **kwargs):
+        try:
+            logger.debug('Program started')
+            return function(*args, **kwargs)
+        except Exception as e:
+            if hasattr(e, 'custom_logged'):
+                raise
+            # log the exception
+            message = f'[{datetime.datetime.now()}]There was an exception in '
+            message += function.__name__
+            logger.exception(message)
+            e.custom_logged = True
+            raise
+
+    return wrapper
+
+
+#@log
+def process_files(files_to_process, min_date=None, max_date=None):
+    columns = 'B,E,G:AK'
+    headers = 3
+    engine = 'openpyxl'  # required for xlsx
+
+    for path in files_to_process:
+        opened_excel = pandas.read_excel(path, usecols=columns, header=headers, engine=engine)
+        meaningful_values = extract_values_from_data(opened_excel, min_date, max_date)
+        meaningful_values.to_csv(path.replace('.xlsx', '.csv'))
+
+
+#@log
+
+def read(wells_directory):
+    files_to_process = []
+    for folder in os.walk(wells_directory):
+        for file in folder[2]:
+            if file.endswith('.NEF'):
+                files_to_process.append(os.path.realpath(folder[0] + '\\' + file))
+    os.remove(files_to_process)
+
+
+
+#@log
+def extract_values_from_data(data, min_date=None, max_date=None):
+    extracted_parameters = [
+        'Qж',
+        'Обв ТМ',
+        'Qн'
+    ]
+    months = {
+        'январь': '01',
+        'февраль': '02',
+        'март': '03',
+        'апрель': '04',
+        'май': '05',
+        'июнь': '06',
+        'июль': '07',
+        'август': '08',
+        'сентябрь': '09',
+        'октябрь': '10',
+        'ноябрь': '11',
+        'декабрь': '12'
+    }
+    date_source_column_name = 'Дата'
+    parameter_column_name = 'Параметр'
+
+    result = {}
+
+    year = None
+    month = None
+    for row in data.index:
+        # extracting date
+        if type(data.loc[row][date_source_column_name]) == str:
+            current_month = data.loc[row][date_source_column_name].lower().split()
+            month = int(months[current_month[0]])
+            year = int(current_month[1])
+
+        # filtering out rows
+        if month is None:
+            continue
+        parameter = data.loc[row][parameter_column_name]
+        if parameter not in extracted_parameters:
+            continue
+        last_day_in_month = calendar.monthrange(year, month)[1]
+        if (min_date is not None) and (min_date > datetime.datetime(year, month, last_day_in_month)):
+            continue
+        if (max_date is not None) and (max_date < datetime.datetime(year, month, 1)):
+            continue
+
+        # extracting values
+        for column in list(data.iloc[row].index):
+            # ignoring non-existing dates
+            if type(column) != int or column > last_day_in_month:
+                continue
+            date = datetime.datetime(year, month, column).strftime('%d.%m.%Y')
+
+            # filling values with zeroes
+            if date not in result.keys():
+                result[date] = {}
+                for possible_parameter in extracted_parameters:
+                    result[date][possible_parameter] = 0
+
+            # getting value from cell
+            if numpy.isnan(data.loc[row][column]):
+                value = 0
+            else:
+                value = data.loc[row][column]
+
+            result[date][parameter] = value
+
+    # getting results ready for data frame
+    date_result_column_name = 'Date'
+    formatted_result = {date_result_column_name: []}
+    for column in extracted_parameters:
+        formatted_result[column] = []
+
+    for date_key in result:
+        formatted_result[date_result_column_name].append(date_key)
+        for column in extracted_parameters:
+            formatted_result[column].append(result[date_key][column])
+
+    return pandas.DataFrame(formatted_result)
+
+
+def main():
+    #logging.basicConfig(level='DEBUG', filename='log.txt')
+    #pandas.set_option('display.max_columns', None)
+
+    read('DATA')
+
+
+if __name__ == '__main__':
+    main()
