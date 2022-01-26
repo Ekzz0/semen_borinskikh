@@ -1,0 +1,111 @@
+# Курсовая работа по дисуиплине "теория колебаний"
+# Метод Рунге Кутты 4 порядка + анимация полученного решения (фазовой плоскости)
+import matplotlib.pyplot as plt
+from celluloid import Camera
+
+def main():
+    h = 0.1  # шаг по времени
+    n = 50  # кол-во шагов по времени
+    T = []  # массив времени
+    X = []  # основная переменная
+    Y = []  # замена x' = y
+    a = 0  # начало интервала по времени
+    lambdaa = 5
+    for i in range(n+1):
+        T.append(h * i)
+        X.append(0)
+        Y.append(0)
+
+    #X = runge(T, X, Y, a, n, h, lambdaa)[0]  # Получение решения X
+    #Y = runge(T, X, Y, a, n, h, lambdaa)[1]  # Получение решения Y = X'
+    #graph(X, Y, T, lambdaa)
+    fig = plt.figure()
+    animation(X, Y, T, a, n, h, fig)
+
+    return 0
+
+
+def runge(T, X, Y, a, n, h, lambdaa):  # Метод Рунге Кутта 4 порядка
+    # Начальные условия
+    X[0] = 0
+    Y[0] = 1
+    # Расчетный цикл
+    for i in range(n):
+        t = a + (i) * h
+        k1 = f(t, X[i], Y[i], lambdaa) * h
+        m1 = g(t, X[i], Y[i], lambdaa) * h
+        k2 = f(t + h / 2, X[i] + k1 / 2, Y[i] + m1 / 2, lambdaa) * h
+        m2 = g(t + h / 2, X[i] + k1 / 2, Y[i] + m1 / 2, lambdaa) * h
+        k3 = f(t + h / 2, X[i] + k2 / 2, Y[i] + m2 / 2,lambdaa) * h
+        m3 = g(t + h / 2, X[i] + k2 / 2, Y[i] + m2 / 2, lambdaa) * h
+        k4 = f(t + h, X[i] + k3, Y[i] + m3, lambdaa) * h
+        m4 = g(t + h, X[i] + k3, Y[i] + m3, lambdaa) * h
+        Y[i+1] = Y[i] + 1 / 6 * (m1 + 2 * m2 + 2 * m3 + m4)
+        X[i+1] = X[i] + 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+
+    return X, Y
+
+
+def f(t, X, Y, lambdaa):
+    return Y
+
+
+def g(t, X, Y, lambdaa):
+    return (lambdaa - Y*Y)*Y - X
+
+
+def graph(X, Y, T, lambdaa, fig):
+
+    # График решения
+    '''
+    plt.xlabel(u'время t, [c]', fontsize=12)
+    plt.ylabel(u'перемешение x, [м]', fontsize=12)
+    plt.title(u'Решение уравнения Рэлея при lambda = ' + str(lambdaa), fontsize=12)
+    plt.plot(T, X, label=u'x(t)')
+    fig.legend(loc='lower right')
+    #plt.savefig('Reshenie')
+    #plt.grid(True, color='black')
+    plt.show()
+    '''
+    # Фазовая плоскость
+    fig = plt.figure()
+    plt.xlabel(u'перемешение x, [м]', fontsize=12)
+    plt.ylabel(u'скорость y, [м/с]', fontsize=12)
+    plt.title(u'Фазовый портрет при lambda = ' + str(lambdaa), fontsize=12)
+    plt.plot(X, Y, label=u'x(t)')
+
+    #fig.legend(loc='lower right')
+    #plt.savefig('Fazoviy_portret')
+    #plt.grid(True, color='black')
+    #plt.show()
+
+
+# Свой range с не целыми шагами
+
+def animation(X, Y, T, a, n, h, fig):
+    camera = Camera(fig)
+    list_lambda = [i for i in range(1, 18)]
+    tmp = [-5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, -0.3, -0.1, -0.01, -0.00001, 0.0001, 0.001, 0.01, 0.1, 0.2,
+           0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    for i in tmp[::-1]:
+        list_lambda.insert(0, i)
+    # print(list_lambda)
+
+    for lambdaa in list_lambda:
+        X = runge(T, X, Y, a, n, h, lambdaa)[0]  # Получение решения X
+        Y = runge(T, X, Y, a, n, h, lambdaa)[1]  # Получение решения Y = X'
+        graph(X, Y, T, lambdaa, fig)
+        camera.snap()
+        plt.close(fig)
+
+
+    #animation = camera.animate()
+    #plt.show()
+    #my_writer = animation.PillowWriter(fps=5, codec='libx264', bitrate=2)
+    #animation.save(filename='gif_test.gif', writer=my_writer)
+
+
+if __name__ == '__main__':
+    main()
+
+
