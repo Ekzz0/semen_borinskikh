@@ -1,0 +1,285 @@
+
+/*
+x0 - координата источника по иксу
+y0 - координата источника по игреку
+U0 - начальная температура во всем помещении
+C0 - пиковая интенсивность источника
+
+C - массив значений концентрации
+G - массив значений источника диффузанта
+A - коэф. перед dC/dt
+*/
+window.addEventListener('load', main, false);
+function main()
+{
+	
+var ctx = canvas_example.getContext('2d');
+var ctx1 = canvas_example1.getContext('2d');
+
+var X_MAX=canvas_example.height;
+var Y_MAX=canvas_example.height;
+var L=4;
+var t0=0;
+var U0=300;
+var C0=1;
+var a=0.08;
+var A=1000000;
+
+
+var dt = 0.01;
+var X_STEPS = 50;
+var Y_STEPS = 50;
+var x0=X_STEPS/2;
+var y0=Y_STEPS/2;
+var h=X_MAX/X_STEPS;
+var T = new Array();
+var C = new Array();
+var G = new Array();
+var fps = 60;
+var MX = X_STEPS/X_MAX;
+var MY = Y_STEPS/Y_MAX;
+var С0=0.03;
+var Cmax=0.97;
+var flag1=0;
+
+var flag3=0;
+
+var timer;
+var timer1;
+var check=0;
+
+	Start();
+	drawC();
+	drawT();
+	flag1=1;
+	flag3=0;
+	
+	function Start() 
+	{
+		for(var i = 0; i < X_STEPS; i++) {
+			T[i] = new Array();
+			C[i] = new Array();
+			G[i] = new Array();
+			for(var j = 0; j < Y_STEPS; j++) {
+				T[i][j] = U0;
+				C[i][j] = С0;
+				G[i][j] = 0.0;
+			}
+		}
+		//это чтобы задать начальное распределение тепла от ичточника
+		for(var i = x0-L/2; i <x0+L/2; i++) 
+		{
+			for(var j = y0-L/2; j <y0+L/2; j++) 
+			{
+				T[i][j] = U0+100;
+				C[i][j] = Cmax;
+			}
+		}
+	}
+	//Пуск
+	button1.onclick = function()
+	{
+		if (flag1==1)
+		{	
+			controlC();
+			controlT();
+			console.log('Старт');
+			flag3=2;
+		}
+	}
+	
+	//пауза
+	button2.onclick = function()
+	{
+		
+		if (flag3==2)
+		{
+			clearTimeout(timer);
+			clearTimeout(timer1);
+			console.log('Пауза');
+			flag1=1;
+		}
+		//console.log(check);
+	}
+	//стоп
+	button3.onclick = function()
+	{
+		
+		if (flag3==2)
+		{
+			clearTimeout(timer);
+			clearTimeout(timer1);
+			Start();
+			drawC();
+			drawT();
+			console.log('Стоп');
+			flag1=1;
+		}
+		
+	}
+	
+	
+function TEMPERATURE() 
+{
+	for(var i = 1; i < X_STEPS - 1; i++) 
+	{
+		for(var j = 1; j < Y_STEPS - 1; j++) 
+		{
+			T[i][j]= T[i][j] + dt*( (a*a) *((T[i+1][j]-2*T[i][j]+T[i-1][j])/(h*h)+(T[i][j+1]-2*T[i][j]+T[i][j-1])/(h*h)));
+			C[i][j] = dt*(G[i][j]/A) + C[i][j] + (dt/A)*( ((T[i][j])**(1.5))*((1/(h*h))*(C[i+1][j] + C[i-1][j] + C[i][j-1] + C[i][j+1] - 4*C[i][j])) + (1.5*((T[i][j])**0.5)/(h*h))*((T[i+1][j] - T[i][j])*(C[i+1][j] - C[i][j]) + (T[i][j+1] - T[i][j])*(C[i][j+1] - C[i][j])));
+		}
+	}
+	for(var i = 0; i < X_STEPS; i++) 
+	{
+		T[i][0] = U0;//T[i][1] + dt*(T[i][1] - U0);
+		T[i][Y_STEPS -1] =U0; //T[i][Y_STEPS - 2] + dt*(T[i][Y_STEPS - 2] - U0);
+		C[i][0] = С0;//C[i][1];
+		C[i][Y_STEPS-1] = С0;//C[i][Y_STEPS - 1];
+	}
+	for(var j = 0; j < Y_STEPS; j++) 
+	{
+		T[0][j] = U0;//T[1][j] + dt*(T[1][j] - U0);
+		T[X_STEPS-1 ][j] = U0;//T[X_STEPS - 2][j] + dt*(T[X_STEPS - 2][j] - U0);
+		C[0][j] = С0;//C[1][j];
+		C[X_STEPS-1][j] = С0;//C[X_STEPS - 1][j];
+		
+	}
+	//Это чтобы  поддерживать температуру в источнике
+	for(var i = x0-L/2; i < x0+L/2; i++) 
+	{
+		for(var j = y0-L/2; j < y0+L/2; j++) 
+		{
+			T[i][j] = U0+100;
+			C[i][j] = Cmax;
+		}
+	}
+	dt += 0.05;
+	//check++;
+	return T;
+	return C;
+}
+
+# Связь значения переменной и цвета RBG
+function drawT()
+{
+	ctx.clearRect(0, 0, X_MAX, Y_MAX);
+	//Для температуры
+	for(var i=0; i<X_STEPS; i++)
+	{
+		for(var j=0; j<Y_STEPS; j++)
+		{
+			
+			ctx.beginPath();
+			if(T[i][j] < 323.5) {
+				ctx.fillStyle = ("rgb(0, " + ("" + parseInt(20 + 10*(T[i][j] - U0))) + ", 255)");
+			}
+				
+			else if((T[i][j] >= 323.5)&&(T[i][j] < 349)) {
+				ctx.fillStyle = ("rgb(0, 255, " + ("" + parseInt(490 - 10*(T[i][j] - U0))) + ")");
+			}
+				
+			else if((T[i][j] >= 349)&&(T[i][j] < 374.5)) {
+				ctx.fillStyle = ("rgb(" + ("" + parseInt(10*(T[i][j] - U0) - 490)) + ", 255, 0)")
+			}
+				
+			else if((T[i][j] >= 374.5)&&(T[i][j] <= 400)) {
+				ctx.fillStyle = ("rgb(255," + ("" + parseInt(1000 - 10*(T[i][j] - U0))) + ", 0)");
+			}			
+			ctx.fillRect(i/MX, j/MY, (j+1)/MX,(i+1)/MY);
+			ctx.fill();
+		}
+		
+	}
+	//console.log(T[X_STEPS/2][Y_STEPS/2+3]);
+	console.log('Температура')
+	ctx.fillStyle="black";
+	ctx.font = "italic 15pt Arial";
+	ctx. fillText('Температура',10,450);
+	ctx. fillText('Синий цвет: T[i][j]=300;',10,470);
+	ctx. fillText('Красный цвет: T[i][j]=400;',10,490);
+}
+function drawC()
+{
+	ctx1.clearRect(0, 0, X_MAX, Y_MAX);
+	//для концентрации
+	
+	for(var i=0; i<X_STEPS; i++)
+	{
+		for(var j=0; j<Y_STEPS; j++)
+		{
+			
+			ctx1.beginPath();
+			if(C[i][j] < 0.22795) {
+				ctx1.fillStyle = ("rgb(0, " + ("" + parseInt(20 + (100000/97)*(C[i][j]))) + ", 255)");
+			}
+				
+			else if((C[i][j] >= 0.22795)&&(C[i][j] < 0.4753)) {
+				ctx1.fillStyle = ("rgb(0, 255, " + ("" + parseInt(490 - (100000/97)*(C[i][j] ))) + ")");
+			}
+			
+			else if((C[i][j] >= 0.4753)&&(C[i][j] < 0.72265)) {
+				ctx1.fillStyle = ("rgb(" + ("" + parseInt((100000/97)*(C[i][j] ) - 490)) + ", 255, 0)")
+			}
+			
+			else if((C[i][j] >= 0.72265)&&(C[i][j] <= 0.97)) {
+				ctx1.fillStyle = ("rgb(255," + ("" + parseInt(1000 - (100000/97)*(C[i][j] ))) + ", 0)");
+			}			
+			ctx1.fillRect(i/MX, j/MY, (j+1)/MX,(i+1)/MY);
+			ctx1.fill();
+			
+		}
+		
+	}
+	
+	
+	//console.log(C[X_STEPS/2][Y_STEPS/2+3]);
+	ctx1.fillStyle="black";
+	ctx1.font = "italic 15pt Arial";
+	ctx1. fillText('Концентрация',10,450);
+	ctx1. fillText('Синий цвет: C[i][j]=0.03;',10,470);
+	ctx1. fillText('Красный цвет: C[i][j]=0.97;',10,490);
+}
+	//первый интервал - [Tmin; Tmin + 0.235*(Tmax - Tmin)] - от синего к голубому, rgb(0, 20 + 10*(T - Tmin), 255)
+	//второй интервал - [Tmin + 0.235*(Tmax - Tmin); Tmin + 0.49*(Tmax - Tmin)] - от голубого к зеленому, rgb(0, 255, 490 - 10*(T - Tmin))
+	//третий интервал - [Tmin + 0.49*(Tmax - Tmin); Tmin + 0.745*(Tmax - Tmin)] - от зеленого к желтому, rgb(10*(T - Tmin) - 490; 255; 0)
+	//четвертый интервал - [Tmin + 0.745(Tmax - Tmin); Tmax] - от желтого к красному; rgb(255, 1000 - 10*(T - Tmin); 0)
+	function controlC()
+	{
+		drawC();
+		TEMPERATURE();
+		timer = setTimeout(controlC, 1000/fps); //1000мс
+		if (check==4541) 
+		{
+			clearTimeout(timer);
+			Start();
+			drawC();
+			drawT();
+			console.log('Дальше схема может разойтись');
+			flag1=0;	
+		}
+	}
+	function controlT()
+	{
+		drawT();
+		TEMPERATURE();
+		timer1 = setTimeout(controlT, 1000/fps); //1000мс
+		if (check==4541) 
+		{
+			clearTimeout(timer1);
+			Start();
+			drawC();
+			drawT();
+			console.log('Дальше схема может разойтись');
+			flag1=0;
+		}
+	}
+	//var V = TEMPERATURE();
+	//console.log(V);
+
+}
+
+	
+
+
+
+
