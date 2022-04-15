@@ -1,0 +1,33 @@
+#%% md
+Перевод градусов Цельсия в градусы Фарингейта
+#%%
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow import keras
+from tensorflow.keras.layers import Dense
+#%% md
+Обучающая выборка
+#%%
+c = np.array([-40, -10, 0, 8, 15, 22, 38]) # градусы цельсия
+f = np.array([-40, 14, 32, 46, 59, 72, 100]) # градусы фарингейта
+
+model = keras.Sequential() # создает модель нейронной многослойной сети
+# Добавление нейронов
+model.add(Dense(units=1, input_shape=(1,), activation='linear'))
+
+model.compile(loss='mean_squared_error', optimizer=keras.optimizers.Adam(0.1))
+              
+history = model.fit(c, f, epochs=500, verbose=False) # обучение нейронной сети
+print("Обучение завершено")
+plt.plot(history.history['loss']) # 2й history - словарь, loss - критерий качества
+#, вычисленный для каждой эпохи
+plt.grid(True)
+plt.show()
+#%%
+print(model.predict([100])) # ввод в модель каких-то данных, т.е её эксплуатация 
+#%%
+print(model.get_weights()) # вернуть весовые коэффициенты
+#%%
