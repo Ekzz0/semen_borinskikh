@@ -1,0 +1,126 @@
+#%% md
+Распознавание рукописных цифр
+#%%
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import mnist         # библиотека базы выборок Mnist
+from tensorflow import keras
+from tensorflow.keras.layers import Dense, Flatten
+#%%
+# Загрузка обучающих и тестовых изображений
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+#%% md
+Чтобы входные параметры находились в пределах от 0 до 1 мы производим стандартизацию данных
+255 - максимальное значение 
+0 - минимальное значение
+
+y_train_cat и y_test_cat - это подготовленного вида данные:
+y_train = 5 -> y_train_cat = [0,0,0,0,0,1,0,0,0,0]
+y_train = 0 -> y_train_cat = [1,0,0,0,0,0,0,0,0,0]
+
+y_train_cat = keras.utils.to_categorical(y_train, 10) - это 
+представление y_train в такой векетр длины 10
+#%%
+# стандартизация входных данных
+x_train = x_train / 255 
+x_test = x_test / 255
+y_train_cat = keras.utils.to_categorical(y_train, 10)
+y_test_cat = keras.utils.to_categorical(y_test, 10)
+#%% md
+Отображение первых 25 изображений из обучающей выборки
+#%%
+
+plt.figure(figsize=(10,5))
+for i in range(25):
+    plt.subplot(5,5,i+1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.imshow(x_train[i], cmap=plt.cm.binary)
+
+plt.show()
+#%% md
+Формирование модели НС и вывод ее структуры в консоль
+#%%
+model = keras.Sequential([
+    Flatten(input_shape=(28, 28, 1)), # входной слой
+    Dense(200, activation='relu'), # скрытый слой
+    Dense(10, activation='softmax') # выходной слой
+])
+
+print(model.summary())      # вывод структуры НС в консоль
+#%% md
+Param - это веса, которые настраиваются в процессе обучения
+(784 входа + 1 bios)*128 скрытых нейронов =  100480 связей, которые мы молжны 
+подстраивать для выходного слоя (весов)
+(128 нейронов + 1 bios)*10 выходов = 1290 весов
+#%%
+model.compile(optimizer='adam',
+             loss='categorical_crossentropy', # т.к больше чем 2 класса
+             metrics=['accuracy'])
+#%% md
+Метрика - accuracy = точность 
+#%% md
+Запуск процесса обучения
+#%% md
+batch_size - размер батча
+validation_split - разбиение обучающей выборка на обучающую и проверучную
+-> 0.2обучающей выборки переходит в выборку валидации
+#%%
+history = model.fit(x_train, y_train_cat, batch_size=32, epochs=5, validation_split=0.2)
+plt.plot(history.history['loss']) # 2й history - словарь, loss - критерий качества
+#, вычисленный для каждой эпохи
+plt.grid(True)
+plt.show()
+#%% md
+Подача тестовой выборки в программу
+#%%
+model.evaluate(x_test, y_test_cat)
+#%% md
+Проверка распознавания цифр
+#%%
+n = 3
+x = np.expand_dims(x_test[n], axis=0) # создание трехмерного тензора, т.к predict ждет 
+# данные именно в таком формате. axis = 0 - добавляет еще одну ось
+res = model.predict(x) # подает в НС изображение и получаем 10 выходов
+print( res )
+# argmax() - индекс максимального значения среди всех выходов
+print(f"Распознанная цифра: {np.argmax(res)}" ) 
+
+plt.imshow(x_test[n], cmap=plt.cm.binary)
+plt.show()
+#%% md
+Выделим все неверные результаты
+#%%
+# Распознавание всей тестовой выборки
+pred = model.predict(x_test) # 10000 векторов из 10 значений
+pred = np.argmax(pred, axis=1) # 10000 значений, которые являются числом
+
+print(pred.shape)
+
+print(pred[:20]) # первые 20 предсказанных чисел
+print(y_test[:20]) # реальные первые 20 чисел
+#%%
+# Выделение неверных вариантов
+mask = pred == y_test # формируем маску. Где сравненные значения равны -> True
+# если не равны -> False
+print(mask[:10]) #
+
+x_false = x_test[~mask] # только те, что со значением false
+p_false = pred[~mask]
+
+print(x_false.shape)
+#%%
+# Вывод первых 25 неверных результатов
+plt.figure(figsize=(10,5))
+for i in range(25):
+    plt.subplot(5,5,i+1)
+    plt.xticks([])
+    plt.yticks([])
+    print("Значение сети: " + str(p_false[i]))
+    plt.imshow(x_false[i], cmap=plt.cm.binary)
+
+plt.show()
